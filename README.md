@@ -1,0 +1,1 @@
+This is owned by Corneli Frunze and i do not give permissions to use or redistribute or sell or make as your own. All right reserved, it's a private property
