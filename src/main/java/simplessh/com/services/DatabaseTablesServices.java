@@ -38,15 +38,13 @@ public class DatabaseTablesServices extends SshCommand {
         String data = execute("mysql_show_table_from_db_with_size", id, database);
         data = data.trim().replaceAll("\t", " ");
 
-        List<Map<String, String>> rows = new ArrayList<>();
-        Arrays.stream(data.split("\n"))
-              .filter(line ->!line.isEmpty() && !line.contains("Tables_in_"+database) && !line.contains("TABLENAME"))
-              .map(line -> line.split(" "))
-              .filter(parts -> parts.length == 2)
-              .forEach(parts -> rows.add( new HashMap<>(){{ put("name", parts[0]); put("size", parts[1]); }}));
-
-        return rows;
-    }
+      return  Arrays.stream(data.split("\n"))
+                    .filter(line ->!line.isEmpty() && !line.contains("Tables_in_"+database) && !line.contains("TABLENAME"))
+                    .map(line -> line.split(" "))
+                    .filter(parts -> parts.length == 2)
+                    .map(e->new HashMap<String, String>(){{ put("name", e[0]); put("size", e[1]); }})
+                    .collect(Collectors.toList());
+      }
 
     /**
      * add new table for database
