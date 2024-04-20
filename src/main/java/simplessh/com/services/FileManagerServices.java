@@ -22,10 +22,17 @@ import java.util.stream.Stream;
  * @author Corneli F.
  */
 @Service
-public class FileManagerServices extends SshCommand{
+public class FileManagerServices{
   
-    @Autowired
+
     private SaveContentInFileService saveContentService;
+
+    private SshCommand ssh;
+
+    public FileManagerServices(SaveContentInFileService saveContentService, SshCommand ssh) {
+        this.saveContentService = saveContentService;
+        this.ssh = ssh;
+    }
 
     /**
      * get list of files folders inside directory
@@ -45,7 +52,7 @@ public class FileManagerServices extends SshCommand{
      * @return
      */
     public List<FileData> getList(String id, String path){
-        String data = execute("show_folder_content_ls_short_and_full", id, path);
+        String data = ssh.execute("show_folder_content_ls_short_and_full", id, path);
 
         return Arrays.stream(data.split("\\r?\\n")).skip(1).map(e-> new FileData(e))
                      .sorted(Comparator.comparing(e->e.getType())).toList();
@@ -60,7 +67,7 @@ public class FileManagerServices extends SshCommand{
      */
     public String getFileContent(String id, HttpServletRequest request) {
 
-        return getStringFileContent(request.getParameter("pathFile"), id);
+        return ssh.getStringFileContent(request.getParameter("pathFile"), id);
      }
 
     /**
@@ -73,14 +80,14 @@ public class FileManagerServices extends SshCommand{
      */
     public String saveContent(String id, List<Map<String, String>> list) {
         String message = "ok";
-        if(isFast(id)) {
+        if(ssh.isFast(id)) {
            saveContentService.save(list,  id);
         }else{
            list.stream().collect(Collectors.groupingBy(e->e.get("path"))).forEach((k,v)->{
                 Map<String, InputStream> file =  v.stream().collect(Collectors.toMap(e->e.get("fileName"),
                               e->new ByteArrayInputStream(e.get("content").getBytes())));
 
-                sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
+               ssh.sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
             });
          }
          /*
@@ -118,7 +125,7 @@ public class FileManagerServices extends SshCommand{
      */
     public String renameFile(String id, Map<String, String> data) {
         String oldname= data.getOrDefault("fromName","");
-        return execute("rename", id,
+        return ssh.execute("rename", id,
                               oldname.replaceAll("\\(","\\\\(").
                                       replaceAll("\\)","\\\\)"),
                               data.getOrDefault("toName",""));
@@ -133,7 +140,7 @@ public class FileManagerServices extends SshCommand{
     public List<FileData> newFileFolder(String id, Map<String, String> data) {
         String type = data.getOrDefault("typeNew","");
 
-        execute(type.contains("file") ? "new_empty_file" : "new_directory", id,
+        ssh.execute(type.contains("file") ? "new_empty_file" : "new_directory", id,
                      data.getOrDefault("owner",""),
                      data.getOrDefault("name",""));
 
@@ -148,14 +155,14 @@ public class FileManagerServices extends SshCommand{
      */
     public List<FileData> removeFileFolder(String id, Map<String, String> data) {
 
-        String checkDir= execute("check_if_directory_exist", id, "/var/trash/");
+        String checkDir= ssh.execute("check_if_directory_exist", id, "/var/trash/");
 
         if(!checkDir.contains("yes"))
-            execute("new_directory", id, "www-data", "/var/trash/");
+            ssh.execute("new_directory", id, "www-data", "/var/trash/");
 
         String fileList = data.getOrDefault("fileList","");
 
-        execute("move", id,  fileList.replaceAll("\\(","\\\\(").
+        ssh.execute("move", id,  fileList.replaceAll("\\(","\\\\(").
                                                            replaceAll("\\)","\\\\)"),
                              "/var/trash/");
         return  getList(id,data.getOrDefault("currentPath",""));
@@ -172,7 +179,7 @@ public class FileManagerServices extends SshCommand{
 
         String fileList = data.getOrDefault("fileList","");
 
-        execute(typePaste.contains("move") ? "move" : "copy", id,
+        ssh.execute(typePaste.contains("move") ? "move" : "copy", id,
                                fileList.replaceAll("\\(","\\\\(").
                                         replaceAll("\\)","\\\\)"),
                                data.getOrDefault("currentPath",""));
@@ -188,7 +195,7 @@ public class FileManagerServices extends SshCommand{
      */
     public List<FileData> emptyFile(String id, Map<String, String> data) {
 
-        execute("empty_file_content", id, data.getOrDefault("filePath",""));
+        ssh.execute("empty_file_content", id, data.getOrDefault("filePath",""));
 
         return  getList(id,data.getOrDefault("currentPath",""));
     }
@@ -208,19 +215,19 @@ public class FileManagerServices extends SshCommand{
 
 
         if(type.contains("owner")){
-            execute((owner.contains(":") ? "modify_owner_user_group":"modify_owner_group"), id, owner, paths);
+            ssh.execute((owner.contains(":") ? "modify_owner_user_group":"modify_owner_group"), id, owner, paths);
         }else if(type.contains("folder")){
-            execute("file_permission", id, data.getOrDefault("permissions",""), paths);
+            ssh.execute("file_permission", id, data.getOrDefault("permissions",""), paths);
 
             if(!yesSubPermission.isEmpty() && !subPermission.isEmpty()){
-                execute("all_folders_permission", id, paths, subPermission);
+                ssh.execute("all_folders_permission", id, paths, subPermission);
 
-                execute("all_files_permission", id, paths, subPermission);
+                ssh.execute("all_files_permission", id, paths, subPermission);
             }
 
         }else if(type.contains("file")){
 
-            execute(paths.contains(" ")? "file_permission_all" : "file_permission", id,
+            ssh.execute(paths.contains(" ")? "file_permission_all" : "file_permission", id,
                           data.getOrDefault("permissions",""), paths);
 
         }
@@ -235,7 +242,7 @@ public class FileManagerServices extends SshCommand{
      */
    public List<FileData> emptyTrash(String id, HttpServletRequest request) {
         String currentUrl = request.getParameter("currentPath");
-        execute("empty_trash", id);
+        ssh.execute("empty_trash", id);
         return  getList(id, currentUrl);
     }
 
@@ -252,11 +259,11 @@ public class FileManagerServices extends SshCommand{
 
         if(type.contains("unzip")){
             String end = Stream.of(filePath.split("\\.")).reduce((first, last)->last).get();
-            execute((end.contains("gz") ||end.contains("tar") ? "tarunzip":"unzip"), id, filePath, currentPath);
+            ssh.execute((end.contains("gz") ||end.contains("tar") ? "tarunzip":"unzip"), id, filePath, currentPath);
         }else{
             SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
             Date date = new Date(System.currentTimeMillis());
-            execute("zip", id, (currentPath +"/"+ formatter.format(date) + ".zip"), filePath);
+            ssh.execute("zip", id, (currentPath +"/"+ formatter.format(date) + ".zip"), filePath);
         }
 
         return  getList(id,currentPath);
@@ -290,12 +297,12 @@ public class FileManagerServices extends SshCommand{
             }catch (Exception e){}
         }
 
-        String owner=  execute("get_folder_group", id, currentPath);
+        String owner=  ssh.execute("get_folder_group", id, currentPath);
 
-        if(isFast(id)) {
-            sftpFastUpload(id,listF, currentPath, owner.trim(),"644");
+        if(ssh.isFast(id)) {
+            ssh.sftpFastUpload(id,listF, currentPath, owner.trim(),"644");
         }else{
-            sftpUpload(id,listF, currentPath, owner.trim(),"644");
+            ssh.sftpUpload(id,listF, currentPath, owner.trim(),"644");
         }
 
         return  getList(id,currentPath);
@@ -316,7 +323,7 @@ public class FileManagerServices extends SshCommand{
         response.setHeader("Content-Disposition", String.format("inline; filename=\"" + fileName + "\""));
 
         String connectionID = request.getParameter("id");
-        DownloadFile downloadFile =downloadFileStream(pathToFile, connectionID);
+        DownloadFile downloadFile =ssh.downloadFileStream(pathToFile, connectionID);
         try {
             InputStream inp= downloadFile.getFile();
             FileCopyUtils.copy(inp, response.getOutputStream());
@@ -325,7 +332,7 @@ public class FileManagerServices extends SshCommand{
         }
 
 
-        disconnectSFTP(downloadFile.getChannelDownload(),
+        ssh.disconnectSFTP(downloadFile.getChannelDownload(),
                 downloadFile.getChannelSftpDownload() );
 
 /*
@@ -356,6 +363,6 @@ public class FileManagerServices extends SshCommand{
      * @return
      */
      public String getFolderSize(String id, HttpServletRequest request) {
-        return execute("get_all_fil_folder_size", id, request.getParameter("directory"));
+        return ssh.execute("get_all_fil_folder_size", id, request.getParameter("directory"));
     }
 }

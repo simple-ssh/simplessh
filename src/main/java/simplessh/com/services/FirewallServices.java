@@ -12,8 +12,13 @@ import java.util.stream.Stream;
  * @author Corneli F.
  */
 @Service
-public class FirewallServices extends SshCommand{
-    
+public class FirewallServices{
+
+    private SshCommand ssh;
+
+    public FirewallServices(SshCommand ssh) {
+        this.ssh = ssh;
+    }
 
     /**
      * get list of firewall
@@ -34,12 +39,12 @@ public class FirewallServices extends SshCommand{
         String actionBtn = request.getParameter("actionBtn");
 
         if(actionBtn.contains("disable")) {
-            execute("firewall_disable", id);
+            ssh.execute("firewall_disable", id);
             return new ArrayList<>();
          }
 
-         execute("commandline", id, "ufw allow '22/tcp'; ufw allow '80/tcp'; ufw allow '443/tcp'; ufw allow 'Bind9'; ufw allow 'Nginx HTTP'; ufw allow '2525/tcp'");
-         execute("firewall_enable", id);
+         ssh.execute("commandline", id, "ufw allow '22/tcp'; ufw allow '80/tcp'; ufw allow '443/tcp'; ufw allow 'Bind9'; ufw allow 'Nginx HTTP'; ufw allow '2525/tcp'");
+         ssh.execute("firewall_enable", id);
         return getDataList(id);
 
     }
@@ -56,9 +61,9 @@ public class FirewallServices extends SshCommand{
          if(name.contains(",")) {
             StringBuilder newName = new StringBuilder("");
             Stream.of(name.split(",")).forEach(e -> newName.append("ufw "+dowhat+" '" + e + "'; "));
-            execute("commandline", id,newName.toString() );
+            ssh.execute("commandline", id,newName.toString() );
         }else{
-            execute("commandline", id, "ufw "+dowhat+" '" + name + "'");
+            ssh.execute("commandline", id, "ufw "+dowhat+" '" + name + "'");
           }
        return getDataList(id);
     }
@@ -73,7 +78,7 @@ public class FirewallServices extends SshCommand{
         String name = request.getParameter("name");
         String idUfw = request.getParameter("id_ufw");
 
-        execute("firewall_remove_rule", id, name, idUfw );
+        ssh.execute("firewall_remove_rule", id, name, idUfw );
         return getDataList(id);
     }
 
@@ -84,7 +89,7 @@ public class FirewallServices extends SshCommand{
      * @return
      */
     private List<Map<String,String>> getDataList(String id){
-       String data = execute("firewall_list", id );
+       String data = ssh.execute("firewall_list", id );
               data = data.replaceAll("ALLOW","@ALLOW - ")
                          .replaceAll("DENY", "@DENY - ")
                          .replaceAll("DISABLED", "@DISABLED - ")

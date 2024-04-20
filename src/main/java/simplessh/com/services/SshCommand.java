@@ -3,6 +3,8 @@ package simplessh.com.services;
 import com.jcraft.jsch.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.Variables;
 import simplessh.com.dao.*;
@@ -18,10 +20,10 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Slf4j
-public abstract class SshCommand {
-
+@Service
+public class SshCommand {
     @Autowired
-    private KeyStoreService service ;
+    protected KeyStoreService keyStoreService ;
 
     private static Map<String, Session> connections = new ConcurrentHashMap<>();
    
@@ -86,7 +88,7 @@ public abstract class SshCommand {
      */
     public String executeAll(String idConnection, Data... datas) {
         Arrays.stream(datas).forEach(v->{
-            execute(v.getCommandName(), idConnection, v.getParams());
+             execute(v.getCommandName(), idConnection, v.getParams());
             try { Thread.sleep(2000); } catch (Exception e) { }
         });
 
@@ -117,7 +119,7 @@ public abstract class SshCommand {
      */
     public Map<String, String> executeMap(String command, String idConnection, String... array ){
 
-        SshAccount sshAccount = service.getSshAccount(idConnection);
+        SshAccount sshAccount = keyStoreService.getSshAccount(idConnection);
         //add session if is not
         addSession(sshAccount, idConnection);
 
@@ -278,7 +280,7 @@ public abstract class SshCommand {
     public void sftpUpload(String idConnection, Map<String, InputStream> files, String path,
                            String owner, String permission){
 
-        String checkDir= execute("check_if_directory_exist", idConnection, "/var/easyvps/" );
+        String checkDir=  execute("check_if_directory_exist", idConnection, "/var/easyvps/" );
 
         if(!checkDir.contains("yes"))
             executeAll(idConnection, new Data("new_directory","/var/easyvps/"),
@@ -312,7 +314,7 @@ public abstract class SshCommand {
      */
     public DownloadFile downloadFileStream(String remoteFile, String idConnection){
 
-        SshAccount sshAccount = service.getSshAccount(idConnection);
+        SshAccount sshAccount = keyStoreService.getSshAccount(idConnection);
         //add session if is not
         addSession(sshAccount, idConnection);
 
@@ -380,14 +382,14 @@ public abstract class SshCommand {
         uploadFile(files, path, id);
 
         //if(!owner.isEmpty() && !permission.isEmpty())
-         //  execute("add_path_file_to_group_perm", new String[]{owner, path, permission}, id );
+         //  ssh.execute("add_path_file_to_group_perm", new String[]{owner, path, permission}, id );
     }
 
     /**
      * will check if path /var/easyvps exist if not than create it
      */
     public void checkForVarEasyvpsPath(String idConnection){
-        String checkDir = execute("check_if_directory_exist", idConnection,"/var/easyvps/" );
+        String checkDir =  execute("check_if_directory_exist", idConnection,"/var/easyvps/" );
 
         if(!checkDir.contains("yes")) {
           executeAll(idConnection, new Data("new_directory","www-data", "/var/easyvps/"),
@@ -412,12 +414,9 @@ public abstract class SshCommand {
     }
 
     public Boolean isFast(String id){
-        SshAccount account = service.getSshAccount(id);
+        SshAccount account = keyStoreService.getSshAccount(id);
         return account.getFast().contains("yes");
     }
 
-    public List<Map<String,String>> extractTheData(String data){
-        PerformData pd = new PerformDataImpl();
-        return pd.extractTheData(data);
-    }
+
 }

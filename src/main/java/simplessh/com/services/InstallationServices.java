@@ -18,9 +18,18 @@ import java.util.StringJoiner;
  */
 
 @Service
-public class InstallationServices extends SshCommand {
+public class InstallationServices {
 
- 
+    private SshCommand ssh;
+
+    public SshCommand getSsh() {
+        return ssh;
+    }
+
+    public void setSsh(SshCommand ssh) {
+        this.ssh = ssh;
+    }
+
     /**
      * check if app is instaled
      * @param id
@@ -30,12 +39,12 @@ public class InstallationServices extends SshCommand {
    public String checkStatus(String id, HttpServletRequest request) {
       String name = request.getParameter("name");
        if(name.contains("php")){
-           String is = execute("check_if_repository_is_set", id, "ondrej/php");
+           String is = ssh.execute("check_if_repository_is_set", id, "ondrej/php");
            if(!is.contains("ondrej")){
-              execute("add_repository", id, "ppa:ondrej/php");
+              ssh.execute("add_repository", id, "ppa:ondrej/php");
            }
        }
-      String result = execute("check_app_is_install", id, name);
+      String result = ssh.execute("check_app_is_install", id, name);
       return result;
     }
 
@@ -47,12 +56,12 @@ public class InstallationServices extends SshCommand {
      */
     public String uninstall(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
-        String result = execute("remove_app", id, name);
+        String result = ssh.execute("remove_app", id, name);
 
         if(name.contains("dovecot"))
-        execute("remove_app", id, "--auto-remove dovecot-core");
+        ssh.execute("remove_app", id, "--auto-remove dovecot-core");
 
-        execute("apt_get_update", id);
+        ssh.execute("apt_get_update", id);
         return result;
     }
 
@@ -68,35 +77,35 @@ public class InstallationServices extends SshCommand {
         String name = data.getOrDefault("name","");
         String additional = data.getOrDefault("additional","");
 
-        execute("apt_get_update", id);
+        ssh.execute("apt_get_update", id);
 
         if(name.contains("php")){
-            String is = execute("check_if_repository_is_set", id, "ondrej/php");
+            String is = ssh.execute("check_if_repository_is_set", id, "ondrej/php");
             if(!is.contains("ondrej")){
                 try{Thread.sleep(1000);}catch (Exception e){}
-                execute("add_repository", id, "ppa:ondrej/php");
+                ssh.execute("add_repository", id, "ppa:ondrej/php");
             }
         }
 
         try{Thread.sleep(1000); }catch (Exception e){}
 
         if(name.contains("postfix")){
-          execute("executecommand",
+          ssh.execute("executecommand",
                        id, "debconf-set-selections <<< 'postfix postfix/mailname string "+additional+"'");
-          execute("commandline",
+          ssh.execute("commandline",
                        id, "debconf-set-selections <<< 'postfix postfix/main_mailer_type string 'Internet Site'\"");
         }
 
 
-        String result = execute("install",  id, name);
+        String result = ssh.execute("install",  id, name);
 
         //if install postfix and dovecot
         /*if(name.contains("postfix")){
 
             //add options to /etc/postfix/master.cf
-            execute("executecommand",
+            ssh.execute("executecommand",
                     id, "postconf -M submission/inet='submission inet n       -       y       -       -       smtpd'");
-            execute("executecommand",
+            ssh.execute("executecommand",
                     id, "postconf -P submission/inet/syslog_name=postfix/submission");
             execute("executecommand",
                     id, "postconf -P submission/inet/smtpd_tls_security_level=encrypt");
@@ -294,12 +303,12 @@ public class InstallationServices extends SshCommand {
 
         //if install BIND9
         if(name.contains("bind9")){
-            execute("firewall_add_rule", id, "53/tcp");
-            execute("firewall_add_rule", id, "Bind9");
+             ssh.execute("firewall_add_rule", id, "53/tcp");
+             ssh.execute("firewall_add_rule", id, "Bind9");
 
             try{Thread.sleep(1000);}catch (Exception e){}
 
-            String content = execute( "get_file_content", id, "/etc/bind/named.conf.options");
+            String content =  ssh.execute( "get_file_content", id, "/etc/bind/named.conf.options");
 
             if(!content.isEmpty()){
 
@@ -321,7 +330,7 @@ public class InstallationServices extends SshCommand {
                 }
 
                 try{Thread.sleep(1000);}catch (Exception e){}
-                execute( "put_content_in_file_simple", id, newData.toString(),
+                 ssh.execute( "put_content_in_file_simple", id, newData.toString(),
                               "/etc/bind/named.conf.options" );
             }
         } // end BIND9
@@ -330,14 +339,14 @@ public class InstallationServices extends SshCommand {
         if(name.compareTo("Mysql") == 0){
             try{Thread.sleep(1000); }catch (Exception e){}
 
-            result = result + execute("secure_database", id);
-            execute("put_content_in_file_simple", id, "[mysqld]\n skip-log-bin", "/etc/mysql/conf.d/disable_binary_log.cnf");
+            result = result +  ssh.execute("secure_database", id);
+             ssh.execute("put_content_in_file_simple", id, "[mysqld]\n skip-log-bin", "/etc/mysql/conf.d/disable_binary_log.cnf");
         } // END mysql
 
 
         //if install fail2ban
         if(name.compareTo("fail2ban") == 0){
-            String checkApp = execute("check_app_is_install", id, "postfix" );
+            String checkApp =  ssh.execute("check_app_is_install", id, "postfix" );
 
             String contentF2B =
                     "[sshd]\n" +
@@ -398,7 +407,7 @@ public class InstallationServices extends SshCommand {
                     "logpath  = /var/log/mail.log\n" +
                     "maxretry = 5\n";
 
-            execute( "put_content_in_file_simple", id, contentF2B, "/etc/fail2ban/jail.local");
+             ssh.execute( "put_content_in_file_simple", id, contentF2B, "/etc/fail2ban/jail.local");
 
 
             Map<String, InputStream> files = new HashMap<>();
@@ -446,10 +455,10 @@ public class InstallationServices extends SshCommand {
 
             if(files.size()>0){
               try{Thread.sleep(1000);}catch (Exception e){}
-              sftpUpload(id, files, "/etc/fail2ban/filter.d/", "root","644");
+                ssh.sftpUpload(id, files, "/etc/fail2ban/filter.d/", "root","644");
             }
             // reload service postfix
-            execute("commandline", id, "systemctl restart fail2ban");
+             ssh.execute("commandline", id, "systemctl restart fail2ban");
 
          } // end fail2ban
 

@@ -9,7 +9,17 @@ import java.util.stream.Collectors;
  * @author Corneli F.
  */
 @Service
-public class GroupsServices extends SshCommand{
+public class GroupsServices{
+    private SshCommand ssh;
+
+    public SshCommand getSsh() {
+        return ssh;
+    }
+
+    public void setSsh(SshCommand ssh) {
+        this.ssh = ssh;
+    }
+
     /**
      * get list of firewall
      * @param id
@@ -28,7 +38,7 @@ public class GroupsServices extends SshCommand{
     public List<Map<String,String>> addNewOne(String id, HttpServletRequest request) {
          String name = request.getParameter("name");
 
-         execute("add_new_group", id, name);
+         ssh.execute("add_new_group", id, name);
         return getDataList(id);
     }
 
@@ -41,7 +51,7 @@ public class GroupsServices extends SshCommand{
     public List<Map<String,String>> remove(String id, HttpServletRequest request ) {
         String name = request.getParameter("name");
 
-         execute("remove_group", id, name);
+         ssh.execute("remove_group", id, name);
         return getDataList(id);
     }
 
@@ -52,7 +62,7 @@ public class GroupsServices extends SshCommand{
      * @return
      */
     private List<Map<String,String>> getDataList(String id){
-        String data = execute("list_of_groups", id);
+        String data = ssh.execute("list_of_groups", id);
 
         return  Arrays.stream(data.split("\\r?\\n")).
                        map(st-> Map.of("name",  st)).
