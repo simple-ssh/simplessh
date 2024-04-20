@@ -19,9 +19,8 @@ import java.util.stream.Stream;
  * @author Corneli F.
  */
 @Service
-public class DomainsServices{
-    @Autowired
-    private SshCommand ssh;
+public class DomainsServices extends SshCommand{
+
 
     @Autowired
     private KeyStoreService keyStoreService;
@@ -46,9 +45,9 @@ public class DomainsServices{
         String type = request.getParameter("type");
 
         name =  name +(type.contains("off")? ".suspended" :  ".conf");
-        ssh.execute("move", id, "/etc/nginx/conf.d/" + name, "/etc/nginx/conf.d/" + name);
+        execute("move", id, "/etc/nginx/conf.d/" + name, "/etc/nginx/conf.d/" + name);
 
-        ssh.execute("nginx_restart", id );
+        execute("nginx_restart", id );
 
         try{Thread.sleep(1000);}catch(Exception e){}
 
@@ -75,7 +74,7 @@ public class DomainsServices{
         String type = data.getOrDefault("typeDomain","php");
 
         if(!dName.isEmpty()) {
-            String phpVersion = ssh.execute("php_version", id);
+            String phpVersion = execute("php_version", id);
                    phpVersion = !phpVersion.isEmpty() ? phpVersion : "8.3";
 
             String javaString ="server { \n" +
@@ -176,21 +175,21 @@ public class DomainsServices{
             params[0] = new Data("put_content_in_file_simple",
                     (type.contains("php")? phpString : javaString), "/etc/nginx/conf.d/"+dName+".conf");
 
-            String checkDir= ssh.execute("check_if_directory_exist", id, pathToDomain+dName);
+            String checkDir= execute("check_if_directory_exist", id, pathToDomain+dName);
             if(!checkDir.contains("yes")){
                 params[1] = new Data("new_directory","www-data", pathToDomain+dName+"/public_html/");
                 params[2] = new Data("assign_www_data_group_to_folder",pathToDomain+dName);
                 params[3] = new Data("automatically_given_www-data_for_new",pathToDomain+dName+"/*");
                 params[4] = new Data("automatically_set_permision_rwrr_for_new",pathToDomain+dName+"/*");
             }
-            ssh.executeAll(id, Arrays.stream(params).filter(Objects::nonNull).toArray(Data[]::new));
+            executeAll(id, Arrays.stream(params).filter(Objects::nonNull).toArray(Data[]::new));
 
 
             try{Thread.sleep(1000);}catch(Exception e){}
 
             if(!ns1.isEmpty()&&!ns2.isEmpty()) {
                 // create a file your-domain.com.db
-                ssh.execute("put_content_in_file_simple", id, dns, "/etc/bind/"+dName+".db");
+                execute("put_content_in_file_simple", id, dns, "/etc/bind/"+dName+".db");
 
                 try{Thread.sleep(1000);}catch(Exception e){}
 
@@ -205,14 +204,14 @@ public class DomainsServices{
             Map<String, InputStream> file =   new HashMap<>(){{
                  put(dName+".conf",new ByteArrayInputStream(confFile.getBytes()));
             }};
-            ssh.sftpUpload(connection, file, "/etc/nginx/conf.d/", "root",  "644");
+            sftpUpload(connection, file, "/etc/nginx/conf.d/", "root",  "644");
             */
 
-            ssh.execute("put_content_in_file_simple", id,
+            execute("put_content_in_file_simple", id,
                           "<h1>Oops!</h1><br/><h2>Something went wrong</h2>", pathToDomain+dName+"/public_html/50x.html");
 
             try{Thread.sleep(1000);}catch(Exception e){}
-            ssh.execute("nginx_restart", id );
+            execute("nginx_restart", id );
         }
 
         try{Thread.sleep(1000);}catch(Exception e){}
@@ -222,7 +221,7 @@ public class DomainsServices{
     // add or remove a row in /etc/bind/named.conf first read the content file
     private void addRemoveToNamedConf(String idConnection, String domainName, String typeOperation){
 
-        String content = ssh.execute("get_file_content", idConnection, "/etc/bind/named.conf");
+        String content = execute("get_file_content", idConnection, "/etc/bind/named.conf");
 
         if(!content.isEmpty()){
            StringJoiner newData = new StringJoiner("\n");
@@ -234,10 +233,10 @@ public class DomainsServices{
                 newData.add("zone \\\""+domainName+"\\\" {type master; file \\\"/etc/bind/"+domainName+".db\\\";};");
 
             if((typeOperation.contains("add") && !content.contains("/"+domainName+".db")) || typeOperation.contains("remove"))
-              ssh.execute("put_content_in_file_simple", idConnection, newData.toString(), "/etc/bind/named.conf");
+              execute("put_content_in_file_simple", idConnection, newData.toString(), "/etc/bind/named.conf");
 
             try{Thread.sleep(1000);}catch (Exception e){}
-            ssh.execute( "app_restart", idConnection, "bind");
+            execute( "app_restart", idConnection, "bind");
         }
 
     }
@@ -253,8 +252,8 @@ public class DomainsServices{
         String name = data.getOrDefault("name","");
         String email = data.getOrDefault("email","");
 
-        //certbot --nginx -d simplessh.com -d www.simplessh.com
-        String response = ssh.execute("installssl", id, email, name, name);
+        //certbot --nginx -d simplecom -d www.simplecom
+        String response = execute("installssl", id, email, name, name);
         try{Thread.sleep(1000);}catch(Exception e){}
         return new ListMapResponse(getDataList(id), response);
     }
@@ -265,7 +264,7 @@ public class DomainsServices{
      * @return
      */
    public ListMapResponse renewSSL(String id) {
-        String result = ssh.execute("renew_ssl", id);
+        String result = execute("renew_ssl", id);
         try{Thread.sleep(1000);}catch(Exception e){}
         return new ListMapResponse(getDataList(id), result);
     }
@@ -280,7 +279,7 @@ public class DomainsServices{
         String name = data.getOrDefault("name","");
         String path = data.getOrDefault("path","");
 
-        ssh.execute("ftp_set_directory", id, path, name.trim());
+        execute("ftp_set_directory", id, path, name.trim());
         try{Thread.sleep(1000);}catch(Exception e){}
         return getDataList(id);
     }
@@ -294,9 +293,9 @@ public class DomainsServices{
    public List<Map<String,String>> removeDomain(String id, HttpServletRequest request ) {
         String name = request.getParameter("name");
 
-        ssh.execute("move", id, "/etc/nginx/conf.d/"+name, "/var/trash/");
+        execute("move", id, "/etc/nginx/conf.d/"+name, "/var/trash/");
         try {  Thread.sleep(2000);  } catch (InterruptedException e) { }
-        ssh.execute("nginx_restart", id );
+        execute("nginx_restart", id );
         try {  Thread.sleep(2000);  } catch (InterruptedException e) { }
 
         addRemoveToNamedConf(id,
@@ -314,7 +313,7 @@ public class DomainsServices{
      * @return
      */
     public List<Map<String,String>> getDataList(String id){
-        String domainList = ssh.execute( "show_folder_content_ls", id, "/etc/nginx/conf.d");
+        String domainList = execute( "show_folder_content_ls", id, "/etc/nginx/conf.d");
         return Arrays.stream(domainList.split("\\r?\\n")).
                       filter(st->!st.contains("file:") && !st.contains(".key") && !st.isEmpty()).
                       map(st->{
@@ -346,7 +345,7 @@ public class DomainsServices{
         String dns = data.getOrDefault("content","");
 
         // create a file your-domain.com.db
-        ssh.execute("put_content_in_file_simple", id, dns, "/etc/bind/"+dName+".db");
+        execute("put_content_in_file_simple", id, dns, "/etc/bind/"+dName+".db");
 
         try{Thread.sleep(1000);}catch(Exception e){}
         // Add a line bellow other content in file /etc/bind/named.conf :

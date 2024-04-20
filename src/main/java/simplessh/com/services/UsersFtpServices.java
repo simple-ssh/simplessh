@@ -1,9 +1,7 @@
 package simplessh.com.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import simplessh.com.dao.Data;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,11 +15,8 @@ import java.util.stream.Collectors;
  * this user services are for ftp and your system there are one user for all
  */
  @Service
-public class UsersFtpServices {
-    @Autowired
-    private SshCommand ssh;
-
-    /**
+public class UsersFtpServices extends SshCommand{
+   /**
      * get list of your system users
      * @param id
      * @return
@@ -41,7 +36,7 @@ public class UsersFtpServices {
         String name = request.getParameter("name");
         String type = request.getParameter("type");
 
-        String result = ssh.execute((type.contains("add") ? "make_user_sudoer" :"remove_user_sudo"), id, name);
+        String result = execute((type.contains("add") ? "make_user_sudoer" :"remove_user_sudo"), id, name);
 
         return result;
     }
@@ -56,7 +51,7 @@ public class UsersFtpServices {
         String name = data.getOrDefault("name","");
         String password = data.getOrDefault("password","");
 
-         ssh.execute("set_password_to_ftp_account", id, name, password);
+         execute("set_password_to_ftp_account", id, name, password);
         return "Password Changed!";
       }
 
@@ -70,7 +65,7 @@ public class UsersFtpServices {
         String name = data.getOrDefault("name","");
         String path = data.getOrDefault("path","");
 
-        ssh.execute("ftp_set_directory", id, path, name.trim());
+        execute("ftp_set_directory", id, path, name.trim());
         return getUsersList(id);
     }
 
@@ -84,7 +79,7 @@ public class UsersFtpServices {
     public List<Map<String,String>> removeUser(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
 
-        ssh.execute("remove_ftp_account", id, name.trim());
+        execute("remove_ftp_account", id, name.trim());
         return getUsersList(id);
     }
 
@@ -107,7 +102,7 @@ public class UsersFtpServices {
 
          params[3] = new Data("add_user_to_group",name, "www-data");
 
-         ssh.executeAll(id, Arrays.stream(params).filter(Objects::nonNull).toArray(Data[]::new));
+         executeAll(id, Arrays.stream(params).filter(Objects::nonNull).toArray(Data[]::new));
 
          return getUsersList(id);
     }
@@ -118,7 +113,7 @@ public class UsersFtpServices {
      * @return
      */
     private List<Map<String,String>> getUsersList(String id){
-        String data = ssh.execute("view_ftp_account", id);
+        String data = execute("view_ftp_account", id);
         return  Arrays.stream(data.split("\\r?\\n")).
                  map(st ->st.split(":")).
                  map(st-> Map.of( "name", st[0],"path", st.length>1 ? st[1]:"")).

@@ -30,9 +30,7 @@ public class TerminalWebsocketController {
             if(singleToken != null){
             terminalWebsocketService.submitCommand(singleToken, "Token Is Down, refresh the page!");
             terminalWebsocketService.close(singleToken);
-            }else{
-
-            }
+            } 
         }
     }
 

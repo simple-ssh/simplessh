@@ -1,6 +1,5 @@
 package simplessh.com.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -13,9 +12,8 @@ import java.util.stream.IntStream;
  * Service
  */
 @Service
-public class ServicesServices {
-    @Autowired
-    private SshCommand ssh ;
+public class ServicesServices extends SshCommand{
+    
 
     /**
      * get list of services
@@ -43,26 +41,26 @@ public class ServicesServices {
 
 
         if(actionBtn.contains("disable")) {
-            ssh.execute("stop_services", id, name);
+            execute("stop_services", id, name);
             //try{Thread.sleep(1000);}catch (Exception e){}
-            //ssh.execute(id,"disable_services", new String[]{name}, true,false);
+            //execute(id,"disable_services", new String[]{name}, true,false);
 
         } else if (actionBtn.contains("enable")) {
-            String is=  ssh.execute("is_enabled_service", id, name);
+            String is=  execute("is_enabled_service", id, name);
             if(is.contains("enabled")) {
-                ssh.execute( "enable_services", id, name);
+                execute( "enable_services", id, name);
                 try {
                     Thread.sleep(1000);
                 } catch (Exception e) {
                 }
             }
-            ssh.execute("start_services", id, name);
+            execute("start_services", id, name);
         }else if (actionBtn.contains("restart")) {
 
-            ssh.execute("restart_services", id, name);
+            execute("restart_services", id, name);
         }else if (actionBtn.contains("remove")) {
-            ssh.execute("remove_services", id, name);
-            //ssh.execute("remove_file", new String[]{"/etc/systemd/system/"+name}, false,false,false);
+            execute("remove_services", id, name);
+            //execute("remove_file", new String[]{"/etc/systemd/system/"+name}, false,false,false);
         }
 
        return getDataList(id);
@@ -77,7 +75,7 @@ public class ServicesServices {
     public String actionService(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
         String action = request.getParameter("actionService");
-        return ssh.execute(action+"_services", id, name);
+        return execute(action+"_services", id, name);
     }
 
     /**
@@ -89,7 +87,7 @@ public class ServicesServices {
     public String getServiceData(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
 
-        return ssh.execute("get_file_content", id, "/etc/systemd/system/"+name);
+        return execute("get_file_content", id, "/etc/systemd/system/"+name);
     }
 
     /**
@@ -100,7 +98,7 @@ public class ServicesServices {
      */
     public String showStatus(String id, HttpServletRequest request ) {
       String name = request.getParameter("name");
-      String service = ssh.execute("status_services", id, name);
+      String service = execute("status_services", id, name);
       return service.replace("Active: active", "<spam style=\"color:green;\">Active: active</spam>").
               replace("Active: inactive","<spam style=\"color:red;\">Active: inactive</spam>").
               replace("Active: failed","<spam style=\"color:red;\">Active: failed</spam>");
@@ -135,11 +133,11 @@ public class ServicesServices {
                 "WantedBy=multi-user.target";
 
 
-        ssh.execute("put_content_in_file_simple", id, fileConten, "/etc/systemd/system/"+name+".service");
+        execute("put_content_in_file_simple", id, fileConten, "/etc/systemd/system/"+name+".service");
         try{Thread.sleep(1000);}catch (Exception e){}
-        ssh.execute("start_services", id, name+".service" );
+        execute("start_services", id, name+".service" );
         try{Thread.sleep(1000);}catch (Exception e){}
-        ssh.execute("enable_services", id, name+".service");
+        execute("enable_services", id, name+".service");
 
         try{Thread.sleep(1000);}catch (Exception e){}
         return getDataList(id);
@@ -153,7 +151,7 @@ public class ServicesServices {
      * @return
      */
     private List<Map<String,String>> getDataList(String id){
-        String data = ssh.execute("show_services",id);
+        String data = execute("show_services",id);
         data = data.replaceAll(" +"," ") ;
 
         List<String> yourList = getYourList(id);
@@ -179,7 +177,7 @@ public class ServicesServices {
      * @return
      */
     private List<String> getYourList(String id){
-        String fileList = ssh.execute("show_folder_content_ls_short_and_full", id, "/etc/systemd/system/");
+        String fileList = execute("show_folder_content_ls_short_and_full", id, "/etc/systemd/system/");
         //System.out.println(fileList);
 
         String[] split = fileList.split("@@@@@@");

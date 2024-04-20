@@ -1,8 +1,7 @@
 package simplessh.com.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
-import simplessh.com.dao.DataBaseImpl;
 import simplessh.com.request.AddUpdateRow;
 import simplessh.com.response.GetTableFullData;
 import simplessh.com.response.ListMapResponse;
@@ -14,9 +13,8 @@ import java.util.stream.Collectors;
  * @author Corneli F.
  */
 @Service
-public class DatabaseTablesServices extends DataBaseImpl {
-    @Autowired
-    private SshCommand ssh ;
+public class DatabaseTablesServices extends SshCommand {
+
     private Integer perPage =100;
 
     /**
@@ -37,7 +35,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
      * @return
      */
     private List<Map<String, String>> getDataList(String id, String database){
-        String data = ssh.execute("mysql_show_table_from_db_with_size", id, database);
+        String data = execute("mysql_show_table_from_db_with_size", id, database);
         data = data.trim().replaceAll("\t", " ");
 
         List<Map<String, String>> rows = new ArrayList<>();
@@ -65,7 +63,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
         String tableName = request.getParameter("table");
         String sql =  "CREATE TABLE IF NOT EXISTS "+databaseName+"."+tableName+" ("+generateSqlForFields(data)+")";
 
-        String response = ssh.execute("mysql_command", id, sql );
+        String response = execute("mysql_command", id, sql );
 
         return new ListMapResponse(getDataList(id, databaseName),response);
     }
@@ -128,7 +126,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
         String databaseName   = data.getOrDefault("database","");
         String tableNames     = data.getOrDefault("tables","");
 
-        String response       = ssh.execute("mysql_delete_table", id, tableNames);
+        String response       = execute("mysql_delete_table", id, tableNames);
 
         return new ListMapResponse(getDataList(id, databaseName),response);
     }
@@ -150,7 +148,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
     private List<Map<String,String>> getListOfColumnsIMPL(String id, String databaseName,String tableName){
 
        return extractTheData(
-                ssh.execute("mysql_show_column_from_table_from_db", id, databaseName+"."+tableName)
+                execute("mysql_show_column_from_table_from_db", id, databaseName+"."+tableName)
           );
     }
 
@@ -166,7 +164,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
         String tableName       = request.getParameter("table");
         String column          = request.getParameter("column");
 
-        String response        = ssh.execute("mysql_delete_field_from_table", id,
+        String response        = execute("mysql_delete_field_from_table", id,
                                                 databaseName+"."+tableName, column);
 
         return new ListMapResponse(getListOfColumnsIMPL(id,databaseName, tableName), response);
@@ -194,7 +192,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
                                 "Alter table "+databaseName+"."+tableName+" ADD( "+generateSqlForFields(data)+" )":
                                 "Alter table "+databaseName+"."+tableName+" "+editOperation+" "+generateSqlForFields(data); //MODIFY
 
-        String response       = ssh.execute("mysql_command", id, sql);
+        String response       = execute("mysql_command", id, sql);
         return new ListMapResponse(getListOfColumnsIMPL(id,databaseName, tableName), response);
     }
 
@@ -214,7 +212,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
 
         GetTableFullData retturnDAta ;
 
-        String dataSplit = ssh.execute( "mysql_show_data_first_call",
+        String dataSplit = execute( "mysql_show_data_first_call",
                                          id, databaseName+"."+tableName,  pagination+", "+perPage );
 
         try{
@@ -290,9 +288,9 @@ public class DatabaseTablesServices extends DataBaseImpl {
                 "SET NAMES 'utf8'; UPDATE " + databaseName + "." + tableName + " p SET " + updateData + " WHERE " + data.getWhere();
 
 
-        String response = ssh.execute("mysql_command", id, sql);
+        String response = execute("mysql_command", id, sql);
 
-        String rows     = ssh.execute("mysql_show_data_from_table",
+        String rows     = execute("mysql_show_data_from_table",
                                           id, databaseName+"."+tableName, pination+","+perPage);
 
         return new ListMapResponse(extractTheData(rows), response);
@@ -316,10 +314,10 @@ public class DatabaseTablesServices extends DataBaseImpl {
 
         String sql            =  "DELETE FROM " + databaseName + "." + tableName + " p WHERE " + where;
 
-        String response       = ssh.execute("mysql_command", id, sql);
+        String response       = execute("mysql_command", id, sql);
 
 
-        String rows           = ssh.execute("mysql_show_data_from_table", id,
+        String rows           = execute("mysql_show_data_from_table", id,
                                         databaseName+"."+tableName, pination+","+perPage);
 
         return new ListMapResponse(extractTheData(rows), response);
@@ -334,7 +332,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
     public ListMapResponse executeMysqlQueryTablesData(String id, Map<String ,String>data  ) {
         String dbName = data.getOrDefault("database","");
         String sql = "USE "+dbName+"; "+data.getOrDefault("query","");
-        Map<String, String> rows = ssh.executeMap("mysql_command", id, sql);
+        Map<String, String> rows = executeMap("mysql_command", id, sql);
         return new ListMapResponse( extractTheData(rows.get("data")), rows.get("error"));
     }
 
@@ -347,7 +345,7 @@ public class DatabaseTablesServices extends DataBaseImpl {
     public ListMapResponse executeMysqlQueryTables(String id, Map<String ,String>data ) {
         String dbName = data.getOrDefault("database","");
         String sql = "USE "+dbName+"; "+data.getOrDefault("query","");
-        Map<String, String> rows = ssh.executeMap("mysql_command", id, sql);
+        Map<String, String> rows = executeMap("mysql_command", id, sql);
 
         return new ListMapResponse( getDataList(id, dbName), rows.get("error"));
     }
@@ -363,7 +361,8 @@ public class DatabaseTablesServices extends DataBaseImpl {
         String databaseName   = data.getOrDefault("database","");
         String tableName      = data.getOrDefault("table","");
 
-        String response       = ssh.execute("mysql_empty_table", id, databaseName+"."+tableName);
+        String response       = execute("mysql_empty_table", id, databaseName+"."+tableName);
         return new ListMapResponse(getDataList(id, databaseName),response);
     }
+
 }

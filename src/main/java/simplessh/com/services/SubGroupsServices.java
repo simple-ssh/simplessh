@@ -10,9 +10,8 @@ import java.util.stream.Collectors;
  * @author Corneli F.
  */
 @Service
-public class SubGroupsServices {
-    @Autowired
-    private SshCommand ssh ;
+public class SubGroupsServices extends SshCommand{
+
 
     /**
      * get list of firewall
@@ -36,7 +35,7 @@ public class SubGroupsServices {
         String name = request.getParameter("name");
         String user = request.getParameter("user");
 
-        ssh.execute("add_user_to_group", id, user,name);
+        execute("add_user_to_group", id, user,name);
         return getDataList(id, name);
     }
 
@@ -50,7 +49,7 @@ public class SubGroupsServices {
         String name = request.getParameter("name");
         String user = request.getParameter("user");
 
-        ssh.execute("remove_user_from_group", id, user, name);
+        execute("remove_user_from_group", id, user, name);
         return getDataList(id, name);
     }
 
@@ -61,7 +60,7 @@ public class SubGroupsServices {
      * @return
      */
     private List<Map<String,String>> getDataList(String id, String name){
-        String data = ssh.execute("list_of_users_in_group", id, name);
+        String data = execute("list_of_users_in_group", id, name);
 
         return  Arrays.stream(data.split(",")).
                 filter(st->!st.trim().isEmpty()).

@@ -1,16 +1,11 @@
 package simplessh.com.services;
 
-
 import com.jcraft.jsch.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.Variables;
-import simplessh.com.dao.Data;
-import simplessh.com.dao.DownloadFile;
-import simplessh.com.dao.SshAccount;
+import simplessh.com.dao.*;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -21,15 +16,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Corneli F.
  */
-@Service
-public class SshCommand {
+
+@Slf4j
+public abstract class SshCommand {
+
     @Autowired
     private KeyStoreService service ;
 
     private static Map<String, Session> connections = new ConcurrentHashMap<>();
-
-    private static final Logger logger = LogManager.getLogger(SshCommand.class);
-
+   
+    
     private Session getSession(SshAccount account){
         Session session = null;
          try {
@@ -50,10 +46,10 @@ public class SshCommand {
             //session.setServerAliveInterval(3600000);
             session.connect();
 
-            logger.info("Connected to "+account.getSshHost());
+            log.info("Connected to "+account.getSshHost());
 
         } catch (Exception e) {
-             logger.error("Error generating session:"+e.getMessage());
+             log.error("Error generating session:"+e.getMessage());
              System.out.println("Error generating session: " + e.getMessage());
          }
 
@@ -70,12 +66,12 @@ public class SshCommand {
     private void addSession(SshAccount sshAccount,  String idConnection){
         if(!connections.containsKey(idConnection)){
             connections.put(idConnection, getSession(sshAccount));
-            logger.info("Generate new session!" );
+            log.info("Generate new session!" );
         }else{
             Session session = connections.get(idConnection);
             if(session == null || !session.isConnected()){
                 connections.put(idConnection, getSession(sshAccount));
-                logger.info("New session was generated, because the old one was down!" );
+                log.info("New session was generated, because the old one was down!" );
             }
 
         }
@@ -101,6 +97,7 @@ public class SshCommand {
 
     public String execute(String command, String idConnection, String... array ){
         Map<String, String> execute = executeMap(command, idConnection, array);
+
         String error                = execute.getOrDefault("error","");
         error                       = (error.toLowerCase(Locale.ROOT).contains("sudo") ||
                                       error.toLowerCase(Locale.ROOT).contains("warning") ||
@@ -142,7 +139,7 @@ public class SshCommand {
         if(commandName.contains("mysql_"))
            command = command.replace("mysqluser", sshAccount.getMysqlLog());
 
-        logger.info("Command: echo '****' | sudo -S "+command);
+        log.info("Command: echo '****' | sudo -S "+command);
 
         command = (!sshAccount.getSshPass().isEmpty() ? "echo '"+sshAccount.getSshPass()+"' | ":"")+"sudo -S "+command;
 
@@ -179,11 +176,11 @@ public class SshCommand {
             }
             error = cf!=null? cf.get(): "";
             in.close();
-            logger.info("Command executed successful." );
+            log.info("Command executed successful." );
             if (channel != null)
                 channel.disconnect();
         } catch(Exception e){
-            logger.info("Error when execute command: "+e.getMessage());
+            log.info("Error when execute command: "+e.getMessage());
         } finally {
             //if(close) disconnect(connection.getSession());
             if (channel != null)  channel.disconnect();
@@ -218,7 +215,7 @@ public class SshCommand {
 
             return command;
         }catch (Exception e){
-            logger.error("Error file:"+e);
+            log.error("Error file:"+e);
         }
         return "";
     }
@@ -230,9 +227,9 @@ public class SshCommand {
     public void disconnect(Session session){
         try{
             session.disconnect();
-            logger.info("Disconnected");
+            log.info("Disconnected");
         }catch (Exception e){
-            logger.error("Error disconnected: "+e.getMessage());
+            log.error("Error disconnected: "+e.getMessage());
         }
     }
 
@@ -255,7 +252,7 @@ public class SshCommand {
                 buf.append((char) c);
             }
         }catch (Exception e){
-            logger.error("Error read file:"+e);
+            log.error("Error read file:"+e);
         }
 
         if(download.getChannelDownload() != null){
@@ -330,7 +327,7 @@ public class SshCommand {
             InputStream inp= channelSftpDownload.get(remoteFile);
             return new DownloadFile(channelDownload, channelSftpDownload, inp) ;
         }catch(Exception e){
-            logger.error("Error Run Download:"+e);
+            log.error("Error Run Download:"+e);
             disconnectSFTP(channelDownload, channelSftpDownload);
         }
 
@@ -358,9 +355,9 @@ public class SshCommand {
                 channelSftp.put(entry.getValue(), entry.getKey());
             }
 
-            logger.info("File uploaded.");
+            log.info("File uploaded.");
         }catch(Exception e){
-            logger.error("Error uploadFile: "+e );
+            log.error("Error uploadFile: "+e );
         }finally {
             if (channel != null)  channel.disconnect();
             if (channelSftp != null)  {
@@ -419,4 +416,8 @@ public class SshCommand {
         return account.getFast().contains("yes");
     }
 
+    public List<Map<String,String>> extractTheData(String data){
+        PerformData pd = new PerformDataImpl();
+        return pd.extractTheData(data);
+    }
 }

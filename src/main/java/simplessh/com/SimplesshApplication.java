@@ -11,7 +11,6 @@ import simplessh.com.config.MvcConfig;
 import simplessh.com.services.KeyStoreService;
 
 @SpringBootApplication
-//@Import(MvcConfig.class)
 public class SimplesshApplication implements ApplicationListener<ContextRefreshedEvent> {
     private static  FirstStart load = new  FirstStart();
 
@@ -19,15 +18,14 @@ public class SimplesshApplication implements ApplicationListener<ContextRefreshe
 	private KeyStoreService keyStoreService;
 
     public static void main(String[] args) {
-	  //load.showLoad();
+	   load.showLoad();
 	   ConfigurableApplicationContext context = SpringApplication.run(SimplesshApplication.class, args);
-
-	  //load.setSpringContext(context);
+       load.setSpringContext(context);
    }
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		 //load.hideLoad();
+		  load.hideLoad();
 		 keyStoreService.setUp();
     }
  }

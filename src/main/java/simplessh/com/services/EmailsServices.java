@@ -4,10 +4,7 @@ import org.apache.commons.codec.digest.Crypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
-import simplessh.com.dao.DataBaseImpl;
 import simplessh.com.dao.SshAccount;
-
-
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -18,10 +15,7 @@ import java.util.stream.Collectors;
  * @author Corneli F.
  */
 @Service
-public class EmailsServices extends DataBaseImpl {
-    @Autowired
-    private SshCommand ssh;
-
+public class EmailsServices extends SshCommand{
     @Autowired
     private FileService fileService;
 
@@ -41,7 +35,7 @@ public class EmailsServices extends DataBaseImpl {
             return null;
 
         String dbName = map.getOrDefault("dbname","");
-        String listOfEmails = ssh.execute( "mysql_select", id, "vu.id, vu.email, vu.domain_id as domainID, va.destination, va.id AS idDestination ",
+        String listOfEmails = execute( "mysql_select", id, "vu.id, vu.email, vu.domain_id as domainID, va.destination, va.id AS idDestination ",
                 dbName+".virtual_users vu LEFT JOIN "+dbName+".virtual_aliases va ON va.source= vu.email" );
 
         return  extractTheData(listOfEmails);
@@ -49,7 +43,7 @@ public class EmailsServices extends DataBaseImpl {
 
 
     public Map<String,String> getDbData(String id) {
-        String dbContent = ssh.execute( "get_file_content", id, "/etc/postfix/mysql-virtual-email2email.cf");
+        String dbContent = execute( "get_file_content", id, "/etc/postfix/mysql-virtual-email2email.cf");
 
         return Arrays.stream(dbContent.split("\n"))
                 .map(line -> line.split("="))
@@ -73,7 +67,7 @@ public class EmailsServices extends DataBaseImpl {
             return Map.of("domain","","response","Not valid domain, please!");
 
         if(type.contains("1") && !domain.isEmpty()){
-            String isSSLInstaled= ssh.execute("executecommand", id, "ls -l /etc/letsencrypt/live/"+domain+"/cert.pem >/dev/null 2>&1 && echo \"File exists.\" || echo \"File does not exist.\"" );
+            String isSSLInstaled= execute("executecommand", id, "ls -l /etc/letsencrypt/live/"+domain+"/cert.pem >/dev/null 2>&1 && echo \"File exists.\" || echo \"File does not exist.\"" );
 
             if(isSSLInstaled.contains("File does not exist"))
                 return Map.of("domain",domain,"response","Let’s Encrypt SSL is not installed to the domain: "+domain+"! Please Install Let’s Encrypt SSL to domain first!");
@@ -90,24 +84,24 @@ public class EmailsServices extends DataBaseImpl {
         }
 
         // set ssl for postfix
-        ssh.execute("executecommand", id,"postconf -e 'smtpd_tls_cert_file="+cert+"'");
-        ssh.execute("executecommand", id, "postconf -e 'smtpd_tls_key_file="+key+"'");
+        execute("executecommand", id,"postconf -e 'smtpd_tls_cert_file="+cert+"'");
+        execute("executecommand", id, "postconf -e 'smtpd_tls_key_file="+key+"'");
 
         if(!capath.isEmpty())
-          ssh.execute("executecommand", id, "postconf -e 'smtp"+(type.contains("3") ? "":"d")+"_tls_CAfile="+capath+"'");
+          execute("executecommand", id, "postconf -e 'smtp"+(type.contains("3") ? "":"d")+"_tls_CAfile="+capath+"'");
 
         //if is return how it was we remove smtpd_tls_CAfile if different smtp_tls_CAfile from main.cf
-        //ssh.execute( "executecommand", id, "postconf -X 'smtp"+(type.contains("3") ? "d":"")+"_tls_CAfile'");
+        //execute( "executecommand", id, "postconf -X 'smtp"+(type.contains("3") ? "d":"")+"_tls_CAfile'");
 
         capath   = type.contains("3") ? "/etc/dovecot/private/dovecot.pem" : capath;
         key    = type.contains("3") ? "/etc/dovecot/private/dovecot.key" : key;
 
         // set ssl for dovecot
-        ssh.execute( "executecommand", id, "sed -i '/^ssl_cert =/s@.*@ssl_cert = <"+capath+"@' /etc/dovecot/conf.d/10-ssl.conf");
-        ssh.execute( "executecommand", id, "sed -i '/^ssl_key =/s@.*@ssl_key = <"+key+"@' /etc/dovecot/conf.d/10-ssl.conf");
+        execute( "executecommand", id, "sed -i '/^ssl_cert =/s@.*@ssl_cert = <"+capath+"@' /etc/dovecot/conf.d/10-ssl.conf");
+        execute( "executecommand", id, "sed -i '/^ssl_key =/s@.*@ssl_key = <"+key+"@' /etc/dovecot/conf.d/10-ssl.conf");
 
         // reload service postfix and close session
-        ssh.execute("executecommand", id, "systemctl restart postfix dovecot");
+        execute("executecommand", id, "systemctl restart postfix dovecot");
 
         return Map.of("domain", "","response","Certificate added to mail server!");
     }
@@ -126,21 +120,21 @@ public class EmailsServices extends DataBaseImpl {
 
 
         // this part we need to add a domain to DKIM if not exist
-        String domainLine = ssh.execute("executecommand", id,"sed -n '/^Domain/p' /etc/opendkim.conf");
+        String domainLine = execute("executecommand", id,"sed -n '/^Domain/p' /etc/opendkim.conf");
         if(!domainLine.isEmpty() && !domainLine.contains(domain)){
             domainLine = domainLine.replace("Domain", "");
             domainLine = domainLine.replaceAll("\\s", "");
             StringJoiner str = new StringJoiner(", ");
             Arrays.stream(domainLine.split(",")).filter(e->!e.isEmpty()).forEach(str::add);
             str.add(domain);
-            ssh.execute("executecommand", id,"sed -i '/^Domain/s/.*/Domain                  "+str+"/' /etc/opendkim.conf");
+            execute("executecommand", id,"sed -i '/^Domain/s/.*/Domain                  "+str+"/' /etc/opendkim.conf");
           }else if(domainLine.isEmpty()){
-            ssh.execute("executecommand", id,"sed -i '22iDomain                  "+domain+"' /etc/opendkim.conf");
+            execute("executecommand", id,"sed -i '22iDomain                  "+domain+"' /etc/opendkim.conf");
           }
        //END DKIM
 
         //postsrsd
-        String postsrsdLine = ssh.execute("executecommand", id,"sed -n '/^SRS_DOMAIN/p' /etc/default/postsrsd");
+        String postsrsdLine = execute("executecommand", id,"sed -n '/^SRS_DOMAIN/p' /etc/default/postsrsd");
         if(!postsrsdLine.isEmpty() && !postsrsdLine.contains(domain)){
             postsrsdLine = postsrsdLine.replace("SRS_DOMAIN", "");
             postsrsdLine = postsrsdLine.replace("=", "");
@@ -149,9 +143,9 @@ public class EmailsServices extends DataBaseImpl {
             StringJoiner strPostsrsd = new StringJoiner(", ");
             Arrays.stream(postsrsdLine.split(",")).filter(e->!e.isEmpty()).forEach(strPostsrsd::add);
             strPostsrsd.add(domain);
-            ssh.execute("executecommand", id,"sed -i '/^SRS_DOMAIN/s/.*/SRS_DOMAIN="+strPostsrsd+"/' /etc/default/postsrsd");
+            execute("executecommand", id,"sed -i '/^SRS_DOMAIN/s/.*/SRS_DOMAIN="+strPostsrsd+"/' /etc/default/postsrsd");
         }else if(postsrsdLine.isEmpty()){
-            ssh.execute("executecommand", id,"sed -i '22iSRS_DOMAIN="+domain+"' /etc/default/postsrsd");
+            execute("executecommand", id,"sed -i '22iSRS_DOMAIN="+domain+"' /etc/default/postsrsd");
         }
         //end postsrsd
 
@@ -163,19 +157,19 @@ public class EmailsServices extends DataBaseImpl {
 
         String db = map.getOrDefault("dbname","");
 
-        String getDomain = ssh.execute("mysql_command", id, "INSERT INTO "+db+".virtual_domains (name) SELECT '"+domain+"' FROM DUAL WHERE NOT EXISTS (SELECT id FROM "+db+".virtual_domains WHERE name = '"+domain+"');" +
+        String getDomain = execute("mysql_command", id, "INSERT INTO "+db+".virtual_domains (name) SELECT '"+domain+"' FROM DUAL WHERE NOT EXISTS (SELECT id FROM "+db+".virtual_domains WHERE name = '"+domain+"');" +
                                                                                "SELECT id FROM "+db+".virtual_domains WHERE name = '"+domain+"';");
         int domainID = Arrays.stream(getDomain.split("\\r?\\n")).
                                filter(e->e.matches("\\d+")).
                                mapToInt(Integer::parseInt).
                                findFirst().orElse(-1);
 
-        ssh.execute("mysql_command", id,
+        execute("mysql_command", id,
            "INSERT INTO "+db+".virtual_users (domain_id, password , email ) VALUES ('"+domainID+"', '"+passwordEncripted.replaceAll("\\$", "\\\\\\$")+"', '"+email+"');" +
                    (!email.trim().contains(forward) ?
                    "INSERT INTO "+db+".virtual_aliases (domain_id, source, destination) VALUES ('"+domainID+"', '"+email+"', '"+forward+"');":"") );
 
-        ssh.execute("executecommand", id,"mkdir -p /var/mail/vhosts/"+domain+"; chmod g+w /var/mail/vhosts/"+domain+"/");
+        execute("executecommand", id,"mkdir -p /var/mail/vhosts/"+domain+"; chmod g+w /var/mail/vhosts/"+domain+"/");
         return getList(id);
     }
 
@@ -192,11 +186,11 @@ public class EmailsServices extends DataBaseImpl {
         String db = map.getOrDefault("dbname","");
 
         if(idForward.isEmpty() && !forward.isEmpty()){
-         ssh.execute("mysql_command", id, "INSERT INTO "+db+".virtual_aliases (domain_id, source, destination) VALUES ('"+domainID+"', '"+email+"', '"+forward+"')");
+         execute("mysql_command", id, "INSERT INTO "+db+".virtual_aliases (domain_id, source, destination) VALUES ('"+domainID+"', '"+email+"', '"+forward+"')");
         }else if(!idForward.isEmpty() && forward.isEmpty()){
-         ssh.execute("mysql_command", id, "DELETE FROM "+db+".virtual_aliases WHERE id='"+idForward+"'");
+         execute("mysql_command", id, "DELETE FROM "+db+".virtual_aliases WHERE id='"+idForward+"'");
         }else {
-         ssh.execute("mysql_command", id, "UPDATE "+db+".virtual_aliases SET destination = '"+forward+"' WHERE id='"+idForward+"'");
+         execute("mysql_command", id, "UPDATE "+db+".virtual_aliases SET destination = '"+forward+"' WHERE id='"+idForward+"'");
         }
        return getList(id);
     }
@@ -222,7 +216,7 @@ public class EmailsServices extends DataBaseImpl {
             return null;
 
         String db = map.getOrDefault("dbname","");
-        ssh.execute("mysql_command", id, "UPDATE "+db+".virtual_users SET password = '"+passwordEncripted.replaceAll("\\$", "\\\\\\$")+"' WHERE id='"+idAcc+"';" );
+        execute("mysql_command", id, "UPDATE "+db+".virtual_users SET password = '"+passwordEncripted.replaceAll("\\$", "\\\\\\$")+"' WHERE id='"+idAcc+"';" );
 
         return "OK";
     }
@@ -240,7 +234,7 @@ public class EmailsServices extends DataBaseImpl {
            return null;
 
        String db = map.getOrDefault("dbname","");
-       ssh.execute("mysql_command", id, "DELETE FROM "+db+".virtual_users WHERE email='"+email+"';" +
+       execute("mysql_command", id, "DELETE FROM "+db+".virtual_users WHERE email='"+email+"';" +
                                                          "DELETE FROM "+db+".virtual_aliases WHERE source='"+email+"';" );
 
 
@@ -260,7 +254,7 @@ public class EmailsServices extends DataBaseImpl {
         }
 
         // create database for server
-        ssh.executeMap("mysql_new_database_user", id, dbName, dbUser, dbHost,
+        executeMap("mysql_new_database_user", id, dbName, dbUser, dbHost,
                                                                  dbPassword, "ALL PRIVILEGES" );
 
         String virtual_domains= """
@@ -292,10 +286,10 @@ public class EmailsServices extends DataBaseImpl {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8""";
 
         // create database an user
-        ssh.executeMap("mysql_command", id, "USE "+dbName+"; "+virtual_domains +";\n"+virtual_users +";\n"+virtual_aliases);
+        executeMap("mysql_command", id, "USE "+dbName+"; "+virtual_domains +";\n"+virtual_users +";\n"+virtual_aliases);
 
         // check if folder /var/easyvps exist if not create it
-        ssh.checkForVarEasyvpsPath(id);
+        checkForVarEasyvpsPath(id);
 
         // prepare postfix.sh
         String postFix = fileService.convertToString("files/postfix/postfixBash.txt");
@@ -321,28 +315,28 @@ public class EmailsServices extends DataBaseImpl {
                                                "dovecot.sh", new ByteArrayInputStream(dovecot.getBytes()));
 
         // upload files to /var/easyvps/
-        ssh.sftpFastUpload(id, file, "/var/easyvps/", "",  "");
+        sftpFastUpload(id, file, "/var/easyvps/", "",  "");
 
         // add execute permission to postfix.sh and dovecot.sh
-        ssh.execute("commandline", id, "chmod +x /var/easyvps/postfix.sh; chmod +x /var/easyvps/dovecot.sh" );
+        execute("commandline", id, "chmod +x /var/easyvps/postfix.sh; chmod +x /var/easyvps/dovecot.sh" );
 
         // execute file /var/easyvps/postfix.sh
-        ssh.execute("commandline", id, "/var/easyvps/postfix.sh" );
+        execute("commandline", id, "/var/easyvps/postfix.sh" );
 
         try { Thread.sleep(2000); } catch (Exception ignored) { }
 
         // execute file /var/easyvps/postfix.sh
-        ssh.execute("commandline", id, "/var/easyvps/dovecot.sh" );
+        execute("commandline", id, "/var/easyvps/dovecot.sh" );
 
         try { Thread.sleep(2000); } catch (Exception ignored) { }
         // remove files
-        ssh.execute("commandline", id, "rm /var/easyvps/postfix.sh; rm /var/easyvps/dovecot.sh" );
+        execute("commandline", id, "rm /var/easyvps/postfix.sh; rm /var/easyvps/dovecot.sh" );
 
         return "It's look like all done, give a try and see, don't forget to add the DNS spf,dmark,dkim TXT record to your domain(s)";
     }
 
     public Map<String, String> getDkimInfo(String id) {
-         String data = ssh.execute( "get_file_content", id, "/root/mail.txt");
+         String data = execute( "get_file_content", id, "/root/mail.txt");
          try {
              if(data.contains("p=")) {
                  String[] split1 = data.split("p=");
@@ -357,29 +351,29 @@ public class EmailsServices extends DataBaseImpl {
     }
 
     public String regenerateDkimKey(String id) {
-           String dname= ssh.execute("executecommand", id, "postconf -n myhostname" );
+           String dname= execute("executecommand", id, "postconf -n myhostname" );
 
            String[] split = dname.split("=");
            if(split.length <=1 || split[1].contains("localhost"))
              return "Not valid domain, please setup manually by run(replace yourdomain.com with your real domain): sudo postconf -e \"myhostname = yourdomain.com\"! " ;
 
 
-          ssh.execute("executecommand", id, "opendkim-genkey -t -s mail -d "+split[1] );
-          ssh.execute("executecommand", id, "cp mail.private /etc/postfix/dkim.key");
+          execute("executecommand", id, "opendkim-genkey -t -s mail -d "+split[1] );
+          execute("executecommand", id, "cp mail.private /etc/postfix/dkim.key");
 
           return "Ok";
     }
 
     public Map<String,String> checkDNS(String id, String domainName, String ip) {
-        String spf= ssh.execute("executecommand", id, "dig "+domainName+" TXT +short | grep '^\\\"'" );
-        String dmarc= ssh.execute("executecommand", id, "dig _dmarc."+domainName+" TXT +short | grep '^\\\"'" );
+        String spf= execute("executecommand", id, "dig "+domainName+" TXT +short | grep '^\\\"'" );
+        String dmarc= execute("executecommand", id, "dig _dmarc."+domainName+" TXT +short | grep '^\\\"'" );
         try{Thread.sleep(1000);}catch(Exception e){}
-        String dkim= ssh.execute("executecommand", id, "dig mail._domainkey."+domainName+" TXT +short | grep '^\\\"'" );
-        String mx= ssh.execute("executecommand", id, "dig "+domainName+" MX +short | grep '^'" );
+        String dkim= execute("executecommand", id, "dig mail._domainkey."+domainName+" TXT +short | grep '^\\\"'" );
+        String mx= execute("executecommand", id, "dig "+domainName+" MX +short | grep '^'" );
         try{Thread.sleep(1000);}catch(Exception e){}
-        String rdns= ssh.execute("executecommand", id, "dig -x "+ip+" +short | grep '^'" );
+        String rdns= execute("executecommand", id, "dig -x "+ip+" +short | grep '^'" );
 
-        String dkimKey = ssh.execute( "get_file_content", id, "/root/mail.txt");
+        String dkimKey = execute( "get_file_content", id, "/root/mail.txt");
                dkim = dkim.replaceAll("\"", "").replaceAll("\n", "").replaceAll("\\s", "");
 
         String finalDkim = dkim;
@@ -412,6 +406,6 @@ public class EmailsServices extends DataBaseImpl {
     }
 
     public String getServerHost(String id) {
-       return ssh.execute("executecommand", id, "hostname -f" );
+       return execute("executecommand", id, "hostname -f" );
     }
 }

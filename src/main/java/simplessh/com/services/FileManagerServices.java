@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
-import simplessh.com.Helpers;
+
 import simplessh.com.dao.DownloadFile;
 import simplessh.com.response.FileData;
 
@@ -22,10 +22,8 @@ import java.util.stream.Stream;
  * @author Corneli F.
  */
 @Service
-public class FileManagerServices {
-    @Autowired
-    private SshCommand ssh;
-
+public class FileManagerServices extends SshCommand{
+  
     @Autowired
     private SaveContentInFileService saveContentService;
 
@@ -47,7 +45,7 @@ public class FileManagerServices {
      * @return
      */
     public List<FileData> getList(String id, String path){
-        String data = ssh.execute("show_folder_content_ls_short_and_full", id, path);
+        String data = execute("show_folder_content_ls_short_and_full", id, path);
 
         return Arrays.stream(data.split("\\r?\\n")).skip(1).map(e-> new FileData(e))
                      .sorted(Comparator.comparing(e->e.getType())).toList();
@@ -62,7 +60,7 @@ public class FileManagerServices {
      */
     public String getFileContent(String id, HttpServletRequest request) {
 
-        return ssh.getStringFileContent(request.getParameter("pathFile"), id);
+        return getStringFileContent(request.getParameter("pathFile"), id);
      }
 
     /**
@@ -75,14 +73,14 @@ public class FileManagerServices {
      */
     public String saveContent(String id, List<Map<String, String>> list) {
         String message = "ok";
-        if(ssh.isFast(id)) {
+        if(isFast(id)) {
            saveContentService.save(list,  id);
         }else{
            list.stream().collect(Collectors.groupingBy(e->e.get("path"))).forEach((k,v)->{
                 Map<String, InputStream> file =  v.stream().collect(Collectors.toMap(e->e.get("fileName"),
                               e->new ByteArrayInputStream(e.get("content").getBytes())));
 
-                ssh.sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
+                sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
             });
          }
          /*
@@ -98,10 +96,10 @@ public class FileManagerServices {
 
                 Map<String, InputStream> file =  v.stream().collect(Collectors.toMap(e->e.get("fileName"),
                         e->new ByteArrayInputStream(e.get("content").getBytes())));
-               if(ssh.isFast(id)) {
-                   ssh.sftpFastUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
+               if(isFast(id)) {
+                   sftpFastUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
                }else{
-                   ssh.sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
+                   sftpUpload(id, file, k, v.get(0).get("owner"), v.get(0).get("permission"));
                }
             });
 
@@ -120,7 +118,7 @@ public class FileManagerServices {
      */
     public String renameFile(String id, Map<String, String> data) {
         String oldname= data.getOrDefault("fromName","");
-        return ssh.execute("rename", id,
+        return execute("rename", id,
                               oldname.replaceAll("\\(","\\\\(").
                                       replaceAll("\\)","\\\\)"),
                               data.getOrDefault("toName",""));
@@ -135,7 +133,7 @@ public class FileManagerServices {
     public List<FileData> newFileFolder(String id, Map<String, String> data) {
         String type = data.getOrDefault("typeNew","");
 
-        ssh.execute(type.contains("file") ? "new_empty_file" : "new_directory", id,
+        execute(type.contains("file") ? "new_empty_file" : "new_directory", id,
                      data.getOrDefault("owner",""),
                      data.getOrDefault("name",""));
 
@@ -150,14 +148,14 @@ public class FileManagerServices {
      */
     public List<FileData> removeFileFolder(String id, Map<String, String> data) {
 
-        String checkDir= ssh.execute("check_if_directory_exist", id, "/var/trash/");
+        String checkDir= execute("check_if_directory_exist", id, "/var/trash/");
 
         if(!checkDir.contains("yes"))
-            ssh.execute("new_directory", id, "www-data", "/var/trash/");
+            execute("new_directory", id, "www-data", "/var/trash/");
 
         String fileList = data.getOrDefault("fileList","");
 
-        ssh.execute("move", id,  fileList.replaceAll("\\(","\\\\(").
+        execute("move", id,  fileList.replaceAll("\\(","\\\\(").
                                                            replaceAll("\\)","\\\\)"),
                              "/var/trash/");
         return  getList(id,data.getOrDefault("currentPath",""));
@@ -174,7 +172,7 @@ public class FileManagerServices {
 
         String fileList = data.getOrDefault("fileList","");
 
-        ssh.execute(typePaste.contains("move") ? "move" : "copy", id,
+        execute(typePaste.contains("move") ? "move" : "copy", id,
                                fileList.replaceAll("\\(","\\\\(").
                                         replaceAll("\\)","\\\\)"),
                                data.getOrDefault("currentPath",""));
@@ -190,7 +188,7 @@ public class FileManagerServices {
      */
     public List<FileData> emptyFile(String id, Map<String, String> data) {
 
-        ssh.execute("empty_file_content", id, data.getOrDefault("filePath",""));
+        execute("empty_file_content", id, data.getOrDefault("filePath",""));
 
         return  getList(id,data.getOrDefault("currentPath",""));
     }
@@ -210,19 +208,19 @@ public class FileManagerServices {
 
 
         if(type.contains("owner")){
-            ssh.execute((owner.contains(":") ? "modify_owner_user_group":"modify_owner_group"), id, owner, paths);
+            execute((owner.contains(":") ? "modify_owner_user_group":"modify_owner_group"), id, owner, paths);
         }else if(type.contains("folder")){
-            ssh.execute("file_permission", id, data.getOrDefault("permissions",""), paths);
+            execute("file_permission", id, data.getOrDefault("permissions",""), paths);
 
             if(!yesSubPermission.isEmpty() && !subPermission.isEmpty()){
-                ssh.execute("all_folders_permission", id, paths, subPermission);
+                execute("all_folders_permission", id, paths, subPermission);
 
-                ssh.execute("all_files_permission", id, paths, subPermission);
+                execute("all_files_permission", id, paths, subPermission);
             }
 
         }else if(type.contains("file")){
 
-            ssh.execute(paths.contains(" ")? "file_permission_all" : "file_permission", id,
+            execute(paths.contains(" ")? "file_permission_all" : "file_permission", id,
                           data.getOrDefault("permissions",""), paths);
 
         }
@@ -237,7 +235,7 @@ public class FileManagerServices {
      */
    public List<FileData> emptyTrash(String id, HttpServletRequest request) {
         String currentUrl = request.getParameter("currentPath");
-        ssh.execute("empty_trash", id);
+        execute("empty_trash", id);
         return  getList(id, currentUrl);
     }
 
@@ -254,11 +252,11 @@ public class FileManagerServices {
 
         if(type.contains("unzip")){
             String end = Stream.of(filePath.split("\\.")).reduce((first, last)->last).get();
-            ssh.execute((end.contains("gz") ||end.contains("tar") ? "tarunzip":"unzip"), id, filePath, currentPath);
+            execute((end.contains("gz") ||end.contains("tar") ? "tarunzip":"unzip"), id, filePath, currentPath);
         }else{
             SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH_mm_ss");
             Date date = new Date(System.currentTimeMillis());
-            ssh.execute("zip", id, (currentPath +"/"+ formatter.format(date) + ".zip"), filePath);
+            execute("zip", id, (currentPath +"/"+ formatter.format(date) + ".zip"), filePath);
         }
 
         return  getList(id,currentPath);
@@ -267,9 +265,9 @@ public class FileManagerServices {
     /*
     @GetMapping(value="/download-file", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody byte[] downloadFile(HttpServletRequest request)  throws IOException {
-        ssh.connect();
+        connect();
         String path = request.getParameter("pathFile");
-        InputStream stream= ssh.downloadFileStream(path);
+        InputStream stream= downloadFileStream(path);
 
         return stream !=null? org.apache.commons.io.IOUtils.toByteArray(stream) :null;
     }*/
@@ -292,12 +290,12 @@ public class FileManagerServices {
             }catch (Exception e){}
         }
 
-        String owner=  ssh.execute("get_folder_group", id, currentPath);
+        String owner=  execute("get_folder_group", id, currentPath);
 
-        if(ssh.isFast(id)) {
-            ssh.sftpFastUpload(id,listF, currentPath, owner.trim(),"644");
+        if(isFast(id)) {
+            sftpFastUpload(id,listF, currentPath, owner.trim(),"644");
         }else{
-            ssh.sftpUpload(id,listF, currentPath, owner.trim(),"644");
+            sftpUpload(id,listF, currentPath, owner.trim(),"644");
         }
 
         return  getList(id,currentPath);
@@ -318,7 +316,7 @@ public class FileManagerServices {
         response.setHeader("Content-Disposition", String.format("inline; filename=\"" + fileName + "\""));
 
         String connectionID = request.getParameter("id");
-        DownloadFile downloadFile =ssh.downloadFileStream(pathToFile, connectionID);
+        DownloadFile downloadFile =downloadFileStream(pathToFile, connectionID);
         try {
             InputStream inp= downloadFile.getFile();
             FileCopyUtils.copy(inp, response.getOutputStream());
@@ -327,15 +325,15 @@ public class FileManagerServices {
         }
 
 
-        ssh.disconnectSFTP(downloadFile.getChannelDownload(),
+        disconnectSFTP(downloadFile.getChannelDownload(),
                 downloadFile.getChannelSftpDownload() );
 
 /*
         Channel channel =  null;
         ChannelSftp channelSftpInt = null;
-        ssh.connect();
+        connect();
         try{
-            channel=ssh.getSession().openChannel("sftp");
+            channel=getSession().openChannel("sftp");
             channel.connect();
             channelSftpInt = (ChannelSftp) channel;
             InputStream inp= channelSftpInt.get(pathToFile);
@@ -347,7 +345,7 @@ public class FileManagerServices {
                 channel.disconnect();
            if(channelSftpInt != null)
                 channelSftpInt.disconnect();
-           ssh.disconnect();
+           disconnect();
         }*/
     }
 
@@ -358,6 +356,6 @@ public class FileManagerServices {
      * @return
      */
      public String getFolderSize(String id, HttpServletRequest request) {
-        return ssh.execute("get_all_fil_folder_size", id, request.getParameter("directory"));
+        return execute("get_all_fil_folder_size", id, request.getParameter("directory"));
     }
 }

@@ -2,6 +2,8 @@ package simplessh.com.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import simplessh.com.services.SshCommand;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,11 +18,9 @@ import java.util.StringJoiner;
  */
 
 @Service
-public class InstallationServices {
+public class InstallationServices extends SshCommand {
 
-    @Autowired
-    private SshCommand ssh;
-
+ 
     /**
      * check if app is instaled
      * @param id
@@ -30,12 +30,12 @@ public class InstallationServices {
    public String checkStatus(String id, HttpServletRequest request) {
       String name = request.getParameter("name");
        if(name.contains("php")){
-           String is = ssh.execute("check_if_repository_is_set", id, "ondrej/php");
+           String is = execute("check_if_repository_is_set", id, "ondrej/php");
            if(!is.contains("ondrej")){
-              ssh.execute("add_repository", id, "ppa:ondrej/php");
+              execute("add_repository", id, "ppa:ondrej/php");
            }
        }
-      String result = ssh.execute("check_app_is_install", id, name);
+      String result = execute("check_app_is_install", id, name);
       return result;
     }
 
@@ -47,12 +47,12 @@ public class InstallationServices {
      */
     public String uninstall(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
-        String result = ssh.execute("remove_app", id, name);
+        String result = execute("remove_app", id, name);
 
         if(name.contains("dovecot"))
-        ssh.execute("remove_app", id, "--auto-remove dovecot-core");
+        execute("remove_app", id, "--auto-remove dovecot-core");
 
-        ssh.execute("apt_get_update", id);
+        execute("apt_get_update", id);
         return result;
     }
 
@@ -68,161 +68,161 @@ public class InstallationServices {
         String name = data.getOrDefault("name","");
         String additional = data.getOrDefault("additional","");
 
-        ssh.execute("apt_get_update", id);
+        execute("apt_get_update", id);
 
         if(name.contains("php")){
-            String is = ssh.execute("check_if_repository_is_set", id, "ondrej/php");
+            String is = execute("check_if_repository_is_set", id, "ondrej/php");
             if(!is.contains("ondrej")){
                 try{Thread.sleep(1000);}catch (Exception e){}
-                ssh.execute("add_repository", id, "ppa:ondrej/php");
+                execute("add_repository", id, "ppa:ondrej/php");
             }
         }
 
         try{Thread.sleep(1000); }catch (Exception e){}
 
         if(name.contains("postfix")){
-          ssh.execute("executecommand",
+          execute("executecommand",
                        id, "debconf-set-selections <<< 'postfix postfix/mailname string "+additional+"'");
-          ssh.execute("commandline",
+          execute("commandline",
                        id, "debconf-set-selections <<< 'postfix postfix/main_mailer_type string 'Internet Site'\"");
         }
 
 
-        String result = ssh.execute("install",  id, name);
+        String result = execute("install",  id, name);
 
         //if install postfix and dovecot
         /*if(name.contains("postfix")){
 
             //add options to /etc/postfix/master.cf
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -M submission/inet='submission inet n       -       y       -       -       smtpd'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -P submission/inet/syslog_name=postfix/submission");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -P submission/inet/smtpd_tls_security_level=encrypt");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -P submission/inet/smtpd_sasl_auth_enable=yes");
 
             try{Thread.sleep(500); }catch (Exception e){}
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -M smtps/inet='smtps     inet  n       -       y       -       -       smtpd'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id,"postconf -P smtps/inet/syslog_name=postfix/smtps" );
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -P smtps/inet/smtpd_tls_wrappermode=yes");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -P smtps/inet/smtpd_sasl_auth_enable=yes");
             //end options to /etc/postfix/master.cf
 
 
             // create file /etc/postfix/virtual
-            ssh.execute("put_content_in_file_simple",
+            execute("put_content_in_file_simple",
                     id,  "","/etc/postfix/virtual");
 
             try{Thread.sleep(500); }catch (Exception e){}
 
             //add options to /etc/postfix/main.cf
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_sasl_type = dovecot'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_sasl_path = private/auth'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_sasl_security_options = noanonymous'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'broken_sasl_auth_clients = yes'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_sasl_auth_enable = yes'");
             try{Thread.sleep(1000); }catch (Exception e){}
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_security_level = may'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_received_header = yes'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_auth_only = no'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_loglevel = 1'");
 
             try{Thread.sleep(1000); }catch (Exception e){}
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_use_tls = yes'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtp_tls_note_starttls_offer = yes'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_session_cache_timeout = 3600s'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtp_tls_security_level=may'");
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination'");
 
 
             try{Thread.sleep(1000); }catch (Exception e){}
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'home_mailbox= Maildir/'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'virtual_alias_maps= hash:/etc/postfix/virtual'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'virtual_alias_domains = '");
 
             //update line in /etc/postfix/postconf.ch
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'mydestination = "+additional+", mail."+additional+", localhost'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtpd_tls_session_cache_database=btree:${data_directory}/smtpd_scache'");
 
-            ssh.execute("executecommand",
+            execute("executecommand",
                     id, "postconf -e 'smtp_tls_session_cache_database=btree:${data_directory}/smtp_scache'");
 
 
             try{Thread.sleep(1000); }catch (Exception e){}
             //update/generate /etc/postfix/virtual.db
-            ssh.execute("commandline",
+            execute("commandline",
                     id, "postmap /etc/postfix/virtual");
 
-            ssh.execute("commandline",
+            execute("commandline",
                     id, "postconf -X 'mailbox_command'");
 
             try{Thread.sleep(500); }catch (Exception e){}
 
 
             // add rules to firewal
-            ssh.execute("firewall_add_rule", id, "Postfix");
-            ssh.execute("firewall_add_rule", id, "25/tcp");
-            ssh.execute("firewall_add_rule", id, "587/tcp");
-            ssh.execute("firewall_add_rule", id, "143/tcp");
+            execute("firewall_add_rule", id, "Postfix");
+            execute("firewall_add_rule", id, "25/tcp");
+            execute("firewall_add_rule", id, "587/tcp");
+            execute("firewall_add_rule", id, "143/tcp");
             try{Thread.sleep(500); }catch (Exception e){}
-            ssh.execute("firewall_add_rule", id, "993/tcp");
-            ssh.execute("firewall_add_rule", id, "110/tcp");
-            ssh.execute("firewall_add_rule", id, "995/tcp");
-            ssh.execute("firewall_add_rule", id, "2525/tcp");
+            execute("firewall_add_rule", id, "993/tcp");
+            execute("firewall_add_rule", id, "110/tcp");
+            execute("firewall_add_rule", id, "995/tcp");
+            execute("firewall_add_rule", id, "2525/tcp");
             try{Thread.sleep(500); }catch (Exception e){}
-            ssh.execute("firewall_add_rule", id, "Dovecot POP3");
-            ssh.execute("firewall_add_rule", id, "Dovecot IMAP");
-            ssh.execute("firewall_add_rule", id, "Dovecot Secure IMAP");
-            ssh.execute("firewall_add_rule", id, "Dovecot Secure POP3");
+            execute("firewall_add_rule", id, "Dovecot POP3");
+            execute("firewall_add_rule", id, "Dovecot IMAP");
+            execute("firewall_add_rule", id, "Dovecot Secure IMAP");
+            execute("firewall_add_rule", id, "Dovecot Secure POP3");
 
-            ssh.execute("firewall_add_rule", id, "Postfix SMTPS");
-            ssh.execute("firewall_add_rule", id, "Postfix Submission");
-            ssh.execute("firewall_add_rule", id, "465/tcp");
+            execute("firewall_add_rule", id, "Postfix SMTPS");
+            execute("firewall_add_rule", id, "Postfix Submission");
+            execute("firewall_add_rule", id, "465/tcp");
 
             try{Thread.sleep(500); }catch (Exception e){}
-            ssh.execute("commandline",
+            execute("commandline",
                      id, "printf \"\\nmail_location = maildir:~/Maildir\\nmail_privileged_group = mail\" >> /etc/dovecot/dovecot.conf");
 
 
             Map<String, InputStream> files = new HashMap<>();
 
             // file : /etc/dovecot/conf.d/10-master.conf
-            String content = ssh.execute( "get_file_content",
+            String content = execute( "get_file_content",
                     id, "/etc/dovecot/conf.d/10-master.conf");
             if(!content.isEmpty()) {
                 String[] listSplit = content.split("\\r?\\n");
@@ -258,7 +258,7 @@ public class InstallationServices {
 
 
             // file: /etc/dovecot/conf.d/10-auth.conf
-            String content2 = ssh.execute( "get_file_content", id, "/etc/dovecot/conf.d/10-auth.conf");
+            String content2 = execute( "get_file_content", id, "/etc/dovecot/conf.d/10-auth.conf");
 
 
             if(!content2.isEmpty()){
@@ -276,30 +276,30 @@ public class InstallationServices {
 
             if(files.size()>0){
               try{Thread.sleep(1000);}catch (Exception e){}
-              ssh.sftpUpload( id, files, "/etc/dovecot/conf.d/", "root", "644");
+              sftpUpload( id, files, "/etc/dovecot/conf.d/", "root", "644");
             }
 
 
-            ssh.execute("commandline", id,"systemctl restart dovecot" );
+            execute("commandline", id,"systemctl restart dovecot" );
 
             try{Thread.sleep(500); }catch (Exception e){}
             // reload service postfix
-            ssh.execute("commandline",
+            execute("commandline",
                     id, "service postfix reload");
 
             // reload service postfix
-            ssh.execute("commandline",
+            execute("commandline",
                     id, "systemctl restart postfix");
         }*/
 
         //if install BIND9
         if(name.contains("bind9")){
-            ssh.execute("firewall_add_rule", id, "53/tcp");
-            ssh.execute("firewall_add_rule", id, "Bind9");
+            execute("firewall_add_rule", id, "53/tcp");
+            execute("firewall_add_rule", id, "Bind9");
 
             try{Thread.sleep(1000);}catch (Exception e){}
 
-            String content = ssh.execute( "get_file_content", id, "/etc/bind/named.conf.options");
+            String content = execute( "get_file_content", id, "/etc/bind/named.conf.options");
 
             if(!content.isEmpty()){
 
@@ -321,7 +321,7 @@ public class InstallationServices {
                 }
 
                 try{Thread.sleep(1000);}catch (Exception e){}
-                ssh.execute( "put_content_in_file_simple", id, newData.toString(),
+                execute( "put_content_in_file_simple", id, newData.toString(),
                               "/etc/bind/named.conf.options" );
             }
         } // end BIND9
@@ -330,14 +330,14 @@ public class InstallationServices {
         if(name.compareTo("Mysql") == 0){
             try{Thread.sleep(1000); }catch (Exception e){}
 
-            result = result + ssh.execute("secure_database", id);
-            ssh.execute("put_content_in_file_simple", id, "[mysqld]\n skip-log-bin", "/etc/mysql/conf.d/disable_binary_log.cnf");
+            result = result + execute("secure_database", id);
+            execute("put_content_in_file_simple", id, "[mysqld]\n skip-log-bin", "/etc/mysql/conf.d/disable_binary_log.cnf");
         } // END mysql
 
 
         //if install fail2ban
         if(name.compareTo("fail2ban") == 0){
-            String checkApp = ssh.execute("check_app_is_install", id, "postfix" );
+            String checkApp = execute("check_app_is_install", id, "postfix" );
 
             String contentF2B =
                     "[sshd]\n" +
@@ -398,7 +398,7 @@ public class InstallationServices {
                     "logpath  = /var/log/mail.log\n" +
                     "maxretry = 5\n";
 
-            ssh.execute( "put_content_in_file_simple", id, contentF2B, "/etc/fail2ban/jail.local");
+            execute( "put_content_in_file_simple", id, contentF2B, "/etc/fail2ban/jail.local");
 
 
             Map<String, InputStream> files = new HashMap<>();
@@ -446,10 +446,10 @@ public class InstallationServices {
 
             if(files.size()>0){
               try{Thread.sleep(1000);}catch (Exception e){}
-              ssh.sftpUpload(id, files, "/etc/fail2ban/filter.d/", "root","644");
+              sftpUpload(id, files, "/etc/fail2ban/filter.d/", "root","644");
             }
             // reload service postfix
-            ssh.execute("commandline", id, "systemctl restart fail2ban");
+            execute("commandline", id, "systemctl restart fail2ban");
 
          } // end fail2ban
 

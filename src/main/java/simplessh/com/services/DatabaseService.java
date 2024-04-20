@@ -1,6 +1,5 @@
 package simplessh.com.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +18,8 @@ import java.util.stream.Collectors;
  * @author Corneli F.
  */
 @Service
-public class DatabaseService {
+public class DatabaseService extends SshCommand{
 
-    @Autowired
-    private SshCommand ssh;
 
     /**
      * Get list of database list
@@ -33,7 +30,7 @@ public class DatabaseService {
    public List<Map<String,String>> getList(String id, HttpServletRequest request) {
         String type=request.getParameter("dataType");
 
-        String data = ssh.execute(type.contains("database")? "mysql_dbList_full":"mysql_show_users_list", id);
+        String data = execute(type.contains("database")? "mysql_dbList_full":"mysql_show_users_list", id);
 
         return getDataList(data);
     }
@@ -44,14 +41,14 @@ public class DatabaseService {
         String privileges = data.getPrivileges() == null ? "ALL PRIVILEGES" :
                 String.join(",", data.getPrivileges());
 
-       ssh.executeAll(id, new Data("mysql_new_database",data.getName()),
+       executeAll(id, new Data("mysql_new_database",data.getName()),
                           new Data("mysql_new_user", data.getUser(), data.getHost(), data.getPassword()),
                           new Data("mysql_user_grand_permision",privileges, data.getName(), "'"+data.getUser() +"'@'"+data.getHost()+"'"),
                           new Data("mysql_flush")
                        );
 
 
-        String dbListWithUsers = ssh.execute( "mysql_dbList_full", id);
+        String dbListWithUsers = execute( "mysql_dbList_full", id);
         return getDataList(dbListWithUsers);
     }
 
@@ -67,12 +64,12 @@ public class DatabaseService {
     public List<Map<String,String>> removeDatabase(String id, HttpServletRequest request) {
         String name = request.getParameter("name");
 
-        ssh.executeAll(id, new Data("mysql_remove_db",name),
+        executeAll(id, new Data("mysql_remove_db",name),
                            new Data("mysql_remove_db_from_sql_table",name),
                            new Data("mysql_flush") );
 
 
-        String data = ssh.execute("mysql_dbList_full", id);
+        String data = execute("mysql_dbList_full", id);
         return getDataList(data);
     }
 
@@ -87,9 +84,9 @@ public class DatabaseService {
         String name= request.getParameter("name");
         // check if path /var/easyvps path exist and open the connection
         String idConnection = request.getParameter("id");
-        ssh.checkForVarEasyvpsPath(idConnection);
+        checkForVarEasyvpsPath(idConnection);
 
-        ssh.executeAll(idConnection, new Data("new_empty_file","root","/var/easyvps/"+name+".sql"),
+        executeAll(idConnection, new Data("new_empty_file","root","/var/easyvps/"+name+".sql"),
                                      new Data("file_permission","666","/var/easyvps/"+name+".sql"),
                                      new Data("mysql_export",name, "/var/easyvps/"+name+".sql") );
 
@@ -97,10 +94,10 @@ public class DatabaseService {
         response.setContentType(mimeType);
         response.setHeader("Content-Disposition", String.format("inline; filename=\"" + name + ".sql\""));
 
-        DownloadFile inp= ssh.downloadFileStream("/var/easyvps/"+name+".sql", idConnection);
+        DownloadFile inp= downloadFileStream("/var/easyvps/"+name+".sql", idConnection);
         FileCopyUtils.copy(inp.getFile(), response.getOutputStream());
 
-        ssh.disconnectSFTP(inp.getChannelDownload(),  inp.getChannelSftpDownload() );
+        disconnectSFTP(inp.getChannelDownload(),  inp.getChannelSftpDownload() );
     }
 
     /**
@@ -114,18 +111,18 @@ public class DatabaseService {
     public String importDb(String id, HttpServletRequest request, MultipartFile file) {
         String dbname= request.getParameter("dbname");
         //connect to server
-         ssh.checkForVarEasyvpsPath(id);
+         checkForVarEasyvpsPath(id);
 
         Map<String, InputStream> listF = new HashMap<>();
         try {
             listF.put(file.getOriginalFilename(), file.getInputStream());
         }catch (Exception e){}
 
-        ssh.uploadFile(listF,  "/var/easyvps/", id );
+        uploadFile(listF,  "/var/easyvps/", id );
 
         try{Thread.sleep(2000);}catch (Exception e){}
 
-        ssh.executeAll(id, new Data("file_permission","666","/var/easyvps/"+file.getOriginalFilename()),
+        executeAll(id, new Data("file_permission","666","/var/easyvps/"+file.getOriginalFilename()),
                            new Data("mysql_import",dbname, "/var/easyvps/"+file.getOriginalFilename()) );
 
         return "Data base imported.";
@@ -139,7 +136,7 @@ public class DatabaseService {
      */
     @GetMapping("/get-list-of-mysql-database")
     public List<Map<String,String>> getListOfDb(String id) {
-        return getDataList(ssh.execute("mysql_dbList", id));
+        return getDataList(execute("mysql_dbList", id));
     }
 
     /**
@@ -153,11 +150,11 @@ public class DatabaseService {
         String privileges = data.getPrivileges() == null ? "ALL PRIVILEGES" :
                 String.join(",", data.getPrivileges());
 
-       ssh.executeAll(id, new Data("mysql_new_user",data.getUser(), data.getHost(), data.getPassword()),
+       executeAll(id, new Data("mysql_new_user",data.getUser(), data.getHost(), data.getPassword()),
                           new Data("mysql_user_grand_permision",privileges, data.getName(), "'"+data.getUser() +"'@'"+data.getHost()+"'"),
                           new Data("mysql_flush") );
 
-     return getDataList(ssh.execute("mysql_show_users_list",  id));
+     return getDataList(execute("mysql_show_users_list",  id));
     }
 
     /**
@@ -171,8 +168,8 @@ public class DatabaseService {
         String name = request.getParameter("name");
         String hostdb = request.getParameter("hostdb");
 
-        ssh.execute("mysql_delete_user", id, name, hostdb);
-        return getDataList(ssh.execute("mysql_show_users_list", id));
+        execute("mysql_delete_user", id, name, hostdb);
+        return getDataList(execute("mysql_show_users_list", id));
     }
 
     /**
@@ -187,7 +184,7 @@ public class DatabaseService {
         String name = data.getOrDefault("name","");
         String host = data.getOrDefault("host","");
         String password = data.getOrDefault("password","");
-        ssh.executeAll(id, new Data("mysql_user_change_password","'"+name+"'@'"+host+"'", password),
+        executeAll(id, new Data("mysql_user_change_password","'"+name+"'@'"+host+"'", password),
                            new Data("mysql_old_user_change_password","'"+name+"'@'"+host+"'", password),
                            new Data("mysql_flush") );
        return "Password changed, if not than enter a password what contain one or more upper case letter, lower case letter, @, and numbers!" ;

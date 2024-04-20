@@ -1,10 +1,8 @@
 package simplessh.com.services;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import simplessh.com.dao.Data;
 
+import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,9 +12,8 @@ import java.util.stream.Stream;
  * @author Corneli F.
  */
 @Service
-public class FirewallServices {
-    @Autowired
-    private SshCommand ssh ;
+public class FirewallServices extends SshCommand{
+    
 
     /**
      * get list of firewall
@@ -37,12 +34,12 @@ public class FirewallServices {
         String actionBtn = request.getParameter("actionBtn");
 
         if(actionBtn.contains("disable")) {
-            ssh.execute("firewall_disable", id);
+            execute("firewall_disable", id);
             return new ArrayList<>();
          }
 
-         ssh.execute("commandline", id, "ufw allow '22/tcp'; ufw allow '80/tcp'; ufw allow '443/tcp'; ufw allow 'Bind9'; ufw allow 'Nginx HTTP'; ufw allow '2525/tcp'");
-         ssh.execute("firewall_enable", id);
+         execute("commandline", id, "ufw allow '22/tcp'; ufw allow '80/tcp'; ufw allow '443/tcp'; ufw allow 'Bind9'; ufw allow 'Nginx HTTP'; ufw allow '2525/tcp'");
+         execute("firewall_enable", id);
         return getDataList(id);
 
     }
@@ -59,9 +56,9 @@ public class FirewallServices {
          if(name.contains(",")) {
             StringBuilder newName = new StringBuilder("");
             Stream.of(name.split(",")).forEach(e -> newName.append("ufw "+dowhat+" '" + e + "'; "));
-            ssh.execute("commandline", id,newName.toString() );
+            execute("commandline", id,newName.toString() );
         }else{
-            ssh.execute("commandline", id, "ufw "+dowhat+" '" + name + "'");
+            execute("commandline", id, "ufw "+dowhat+" '" + name + "'");
           }
        return getDataList(id);
     }
@@ -76,7 +73,7 @@ public class FirewallServices {
         String name = request.getParameter("name");
         String idUfw = request.getParameter("id_ufw");
 
-        ssh.execute("firewall_remove_rule", id, name, idUfw );
+        execute("firewall_remove_rule", id, name, idUfw );
         return getDataList(id);
     }
 
@@ -87,7 +84,7 @@ public class FirewallServices {
      * @return
      */
     private List<Map<String,String>> getDataList(String id){
-       String data = ssh.execute("firewall_list", id );
+       String data = execute("firewall_list", id );
               data = data.replaceAll("ALLOW","@ALLOW - ")
                          .replaceAll("DENY", "@DENY - ")
                          .replaceAll("DISABLED", "@DISABLED - ")
