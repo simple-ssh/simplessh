@@ -9,16 +9,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import simplessh.com.services.SshCommand;
 
 @Component
-public class OancePerRequest  extends OncePerRequestFilter {
+public class OncePerRequest  extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(OancePerRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(OncePerRequest.class);
 
+    private SshCommand ssh;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-
+        //System.out.println("safasfasfas:"+request.getHeader("id"));
        filterChain.doFilter(request, response);
     }
 

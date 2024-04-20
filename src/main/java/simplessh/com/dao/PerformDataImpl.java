@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public abstract class DataBaseImpl {
+public class PerformDataImpl implements PerformData {
     /**
      * will transform the string bellow in  List<Map<String,String>>
       Field  Type	         Null	Key	  Default	 Extra
