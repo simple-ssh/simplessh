@@ -14,16 +14,20 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DomainsServicesTest {
+
     @Mock
-    private SshCommand ssh;
+    private SshCommand sshCommand;
 
     @InjectMocks
     private DomainsServices domainsServices;
 
     @Test
     void getDataListEmpty() {
-        when(ssh.execute("show_folder_content_ls", "sDSD", "/etc/nginx/conf.d")).
-                thenReturn("");
+        when(sshCommand.execute("show_folder_content_ls", "sDSD", "/etc/nginx/conf.d")).
+               thenReturn("");
+
+
+
 
         List<Map<String,String>> list = domainsServices.getDataList("sDSD");
         assertTrue(list.isEmpty());
@@ -31,9 +35,10 @@ class DomainsServicesTest {
 
     @Test
     void getDataListWithData() {
-        when(ssh.execute("show_folder_content_ls", "sDSD", "/etc/nginx/conf.d")).
+        when(sshCommand.execute("show_folder_content_ls", "sDSD", "/etc/nginx/conf.d")).
                 thenReturn("domain1.com.conf\ndomain2.com.suspended\ndomain3.com.conf\ndomain4.com.conf\ndomain5.com.conf\n");
 
+        
         List<Map<String,String>> list = domainsServices.getDataList("sDSD");
         assertTrue(list.size()==5);
     }

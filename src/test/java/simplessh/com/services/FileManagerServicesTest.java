@@ -11,18 +11,20 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileManagerServicesTest {
     @Mock
-    private SshCommand ssh;
+    private SshCommand sshCommand;
+
     @InjectMocks
     private FileManagerServices fileManagerServices;
 
     @Test
     void getList() {
-        when(ssh.execute("show_folder_content_ls_short_and_full", "safe", "/var/www")).
+        when(sshCommand.execute("show_folder_content_ls_short_and_full", "safe", "/var/www")).
                 thenReturn("""
                         total 136kB
                         drwxrwsr-x 2 root staff 5kB 15/04/2020-14:09:51 local
@@ -33,7 +35,7 @@ class FileManagerServicesTest {
                         drwxrwsrwt 3 vmail vmail 5kB 18/04/2024-12:05:51 mail
                         """);
 
-
+         //FileManagerServices fileManagerServices = new FileManagerServices(mock(SaveContentInFileService.class, SshCommand.class));
         List<FileData> list = fileManagerServices.getList("safe","/var/www");
           assertTrue(list.size()==6);
      }

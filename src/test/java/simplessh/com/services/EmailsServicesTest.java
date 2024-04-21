@@ -5,24 +5,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
 import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmailsServicesTest {
+
     @Mock
-    private SshCommand ssh;
+    private SshCommand sshCommand ;
 
     @InjectMocks
     private EmailsServices emailsServices;
 
     @Test
-    void getDbDataEmpty() {
-        when(ssh.execute("get_file_content", "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
+    void getDbDataEmpty()  {
+         when(sshCommand.execute("get_file_content", "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
                 thenReturn("");
 
         Map<String,String> list = emailsServices.getDbData("sDSD");
@@ -31,8 +29,8 @@ class EmailsServicesTest {
 
     @Test
     void getDbDataWithData() {
-        when(ssh.execute("get_file_content",  "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
-                thenReturn("dbname = mailserver\ndbuser = mailserveruser\ndbpassword=pass\n");
+        when(sshCommand.execute("get_file_content",  "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
+                 thenReturn("dbname = mailserver\ndbuser = mailserveruser\ndbpassword=pass\n");
 
         Map<String,String> list = emailsServices.getDbData("sDSD");
         assertTrue(list.size()==3);
@@ -40,7 +38,7 @@ class EmailsServicesTest {
 
     @Test
     void simpleTestEmpty() {
-        when(ssh.execute("get_file_content",  "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
+         when(sshCommand.execute("get_file_content",  "sDSD", "/etc/postfix/mysql-virtual-email2email.cf")).
                 thenReturn("");
 
         String str= emailsServices.simpleTest("sDSD");

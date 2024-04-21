@@ -7,18 +7,18 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DataBaseImplTest {
+class PerformDataImplTest {
 
     @Test
     void extractTheDataEmpty() {
-        PerformData dt = new PerformDataImpl(){};
+        PerformDataImpl dt = new PerformDataImpl() ;
         List<Map<String,String>> list = dt.extractTheData("");
         assertTrue(list.isEmpty());
     }
 
     @Test
     void extractTheDataWithData1() {
-        PerformData dt = new PerformDataImpl(){};
+        PerformDataImpl dt = new PerformDataImpl() ;
         String st = "id\temail\tdestination\tidDestination\n" +
                 "2\tdmarc@test1.com\tdmarc@test1.com\t2\n" +
                 "1\tinfo@test1.com\tinfo@test1.com\t1\n" +
@@ -30,7 +30,7 @@ class DataBaseImplTest {
 
     @Test
     void extractTheDataWithData2() {
-        PerformData dt = new PerformDataImpl(){};
+        PerformDataImpl dt = new PerformDataImpl() ;
         String st = "id\temail\tdestination\tidDestination\n" +
                 "2\tdmarc@test1.com\tdmarc@test11.com\t2\n" +
                 "1\tinfo@test1.com\tinfo@test11.com\t1\n" +
