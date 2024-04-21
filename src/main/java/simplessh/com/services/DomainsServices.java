@@ -1,6 +1,5 @@
 package simplessh.com.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import simplessh.com.dao.Data;
 import simplessh.com.response.ListMapResponse;
@@ -13,13 +12,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Corneli F.
  */
 @Service
-public class DomainsServices {
+public class DomainsServices{
 
     private KeyStoreService keyService ;
     private SshCommand ssh;
