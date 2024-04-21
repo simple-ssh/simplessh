@@ -15,11 +15,7 @@ import java.util.stream.IntStream;
 public class ServicesServices{
     private SshCommand ssh;
 
-    public SshCommand getSsh() {
-        return ssh;
-    }
-
-    public void setSsh(SshCommand ssh) {
+    public ServicesServices(SshCommand ssh) {
         this.ssh = ssh;
     }
 

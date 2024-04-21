@@ -19,14 +19,9 @@ import java.util.StringJoiner;
 
 @Service
 public class InstallationServices {
-
     private SshCommand ssh;
 
-    public SshCommand getSsh() {
-        return ssh;
-    }
-
-    public void setSsh(SshCommand ssh) {
+    public InstallationServices(SshCommand ssh) {
         this.ssh = ssh;
     }
 

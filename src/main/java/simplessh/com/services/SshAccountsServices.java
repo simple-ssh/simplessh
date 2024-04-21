@@ -20,8 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class SshAccountsServices {
 
-    @Autowired
     private KeyStoreService keyStoreService;
+
+    public SshAccountsServices(KeyStoreService keyStoreService) {
+        this.keyStoreService = keyStoreService;
+    }
 
     /**
      * get list of ssh account

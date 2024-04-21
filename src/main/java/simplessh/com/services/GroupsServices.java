@@ -12,11 +12,7 @@ import java.util.stream.Collectors;
 public class GroupsServices{
     private SshCommand ssh;
 
-    public SshCommand getSsh() {
-        return ssh;
-    }
-
-    public void setSsh(SshCommand ssh) {
+    public GroupsServices(SshCommand ssh) {
         this.ssh = ssh;
     }
 

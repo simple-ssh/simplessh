@@ -13,8 +13,12 @@ import java.util.Properties;
 @Service
 @Slf4j
 public class SaveContentInFileService {
-    @Autowired
+
     private KeyStoreService keyService ;
+
+    public SaveContentInFileService(KeyStoreService keyService){
+        this.keyService=keyService;
+    }
 
     public String save(List<Map<String, String>> list, String connectionId){
         if(list.size()==0)

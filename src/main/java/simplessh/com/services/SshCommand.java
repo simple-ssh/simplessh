@@ -3,7 +3,6 @@ package simplessh.com.services;
 import com.jcraft.jsch.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.Variables;
@@ -22,8 +21,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class SshCommand {
-    @Autowired
+
     protected KeyStoreService keyStoreService ;
+    public SshCommand(KeyStoreService keyStoreService) {
+        this.keyStoreService = keyStoreService;
+    }
 
     private static Map<String, Session> connections = new ConcurrentHashMap<>();
    
