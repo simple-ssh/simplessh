@@ -77,17 +77,8 @@ public class SshAccountsServices {
 
         }
 
-
-
         //save data to keystore unde the entry name: sshAccounts
         keyStoreService.setKeyStoreValue("sshaccounts", (new Gson()).toJson(acc));
-
-        //String json =  keyStoreService.getKeyStoreValue("jwtkey");
-        //System.out.println("jwtis:"+json);
-
-        //Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        //String base64Key = Encoders.BASE64.encode(key.getEncoded());
-        //keyStoreService.setKeyStoreValue("jwtkey", base64Key);
 
         List<SshAccount> returnData = acc;
         returnData.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
