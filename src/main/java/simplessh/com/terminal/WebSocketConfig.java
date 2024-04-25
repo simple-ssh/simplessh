@@ -14,9 +14,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{ //WebSocketConfigurer,
 
-
     @Autowired
-    WebsocketAuthInterceptor websocketAuthInterceptor;
+   private WebsocketAuthInterceptor websocketAuthInterceptor;
+   @Autowired
+   private HandshakeInterceptorImpl handshakeInterceptor;
 
    // when have time move to this one : https://stackoverflow.com/questions/70418738/how-to-build-a-push-notifications-service-with-spring-and-websocket
     /*
@@ -34,13 +35,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{ //WebS
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/api/ws1").setAllowedOrigins("*");
-        registry.addEndpoint("/api/ws1").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/api/ws1").setAllowedOrigins("*").addInterceptors(handshakeInterceptor);
+        registry.addEndpoint("/api/ws1").setAllowedOrigins("*").addInterceptors(handshakeInterceptor).withSockJS();
     }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(websocketAuthInterceptor);
     }
+
+
+
 
 }

@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.Variables;
 import simplessh.com.dao.*;
-import java.io.BufferedInputStream;
-import java.io.InputStream;
+
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Corneli F.
@@ -246,6 +247,39 @@ public class SshCommand {
      */
     public String getStringFileContent(String remoteFile, String idConnection){
         DownloadFile download = downloadFileStream(remoteFile, idConnection);
+        List<String> lines;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(download.getFile()))) {
+            lines = reader.lines().collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error reading file: " + e);
+            return "Error reading file!";
+        } finally {
+            // Make sure to close the InputStream
+            // Make sure to close resources and disconnect channels
+            try {
+                download.getFile().close();
+            } catch (IOException e) {
+                log.error("Error closing input stream: " + e);
+            }
+
+            if(download.getChannelSftpDownload() != null){
+                download.getChannelSftpDownload().disconnect();
+            }
+
+            if(download.getChannelDownload() != null){
+                download.getChannelDownload().disconnect();
+            }
+        }
+
+        boolean reverseContent = remoteFile.endsWith(".log");
+        // Reverse the content if the file ends with ".log"
+        if(reverseContent) {
+            Collections.reverse(lines);
+        }
+
+        return String.join("\n", lines);
+
+        /*DownloadFile download = downloadFileStream(remoteFile, idConnection);
 
         InputStream inp = download.getFile();
         StringBuffer buf = new StringBuffer();
@@ -267,7 +301,7 @@ public class SshCommand {
             download.getChannelSftpDownload().disconnect();
         }
 
-        return buf.toString();
+        return buf.toString();*/
     }
 
 

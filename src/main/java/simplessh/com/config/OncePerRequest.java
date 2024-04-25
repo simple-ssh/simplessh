@@ -17,8 +17,12 @@ public class OncePerRequest  extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-         //System.out.println("header:"+request.getHeader("id"));
-       filterChain.doFilter(request, response);
+
+            //CustomHttpServletRequest req = new CustomHttpServletRequest(request);
+            //req.putHeader("Upgrade", "websocket");
+            //req.putHeader("Connection", "Upgrade");
+        request.getHeader("Connection") ;
+         filterChain.doFilter(request, response);
     }
 
 

@@ -3,10 +3,6 @@ package simplessh.com.services;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,7 +29,7 @@ public class LogsServices {
      * @return
      */
 
-    public String getStatus() {
+    public String getStatus(Integer limit) {
 
         File userDir = new File(System.getProperty("user.dir"));
         File logFile= new File(userDir , "logs/simplessh.log");
@@ -43,12 +39,11 @@ public class LogsServices {
         Path filePath = Path.of(logFile.getAbsolutePath());
         StringBuilder contentBuilder = new StringBuilder();
 
-        try (Stream<String> stream
-                     = Files.lines(Paths.get(String.valueOf(filePath)), StandardCharsets.UTF_8))
+        try (Stream<String> stream = Files.lines(Paths.get(String.valueOf(filePath)), StandardCharsets.UTF_8))
         {
 
             //Read the content with Stream
-            stream.collect(reverseStream()).forEach(s -> contentBuilder.append(s).append("\n"));
+            stream.collect(reverseStream()).limit(limit).forEach(s -> contentBuilder.append(s).append("\n"));
         }
         catch (IOException e)
         {

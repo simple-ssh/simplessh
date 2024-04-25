@@ -31,6 +31,7 @@ public class WebsocketAuthInterceptor  implements ChannelInterceptor {
         String jwt = parseJwt(accessor);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand()) && singleToken!=null) {
+
             if(jwtUtils.validateJwtToken(jwt))
              terminalWebsocketService.init(sessionId, singleToken, connectionId);
             else

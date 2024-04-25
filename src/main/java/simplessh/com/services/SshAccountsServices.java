@@ -1,6 +1,9 @@
 package simplessh.com.services;
 
 import com.google.gson.Gson;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +11,7 @@ import simplessh.com.Helpers;
 import simplessh.com.dao.SshAccount;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.Key;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,13 +77,29 @@ public class SshAccountsServices {
 
         }
 
+
+
         //save data to keystore unde the entry name: sshAccounts
         keyStoreService.setKeyStoreValue("sshaccounts", (new Gson()).toJson(acc));
+
+        //String json =  keyStoreService.getKeyStoreValue("jwtkey");
+        //System.out.println("jwtis:"+json);
+
+        //Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        //String base64Key = Encoders.BASE64.encode(key.getEncoded());
+        //keyStoreService.setKeyStoreValue("jwtkey", base64Key);
 
         List<SshAccount> returnData = acc;
         returnData.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
 
         return returnData;
+    }
+
+    public String changeJWTToken(){
+         Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+         String base64Key = Encoders.BASE64.encode(key.getEncoded());
+         keyStoreService.setKeyStoreValue("jwtkey", base64Key);
+         return  "ok";
     }
 
     /**

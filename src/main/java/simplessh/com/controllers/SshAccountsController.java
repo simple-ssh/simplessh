@@ -62,5 +62,9 @@ public class SshAccountsController {
         return service.getListHeader();
     }
 
+    @GetMapping("/change-token-access")
+    public String changeJWTToken() {
+      return service.changeJWTToken();
+    }
 
 }

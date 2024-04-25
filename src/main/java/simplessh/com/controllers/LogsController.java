@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import simplessh.com.services.LogsServices;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,9 +38,9 @@ public class LogsController {
      * @return
      */
     @GetMapping("/get-logs")
-    public String getStatus() {
-
-      return services.getStatus();
+    public String getStatus(HttpServletRequest request) {
+       Integer limit = Integer.valueOf(request.getParameter("limit"));
+      return services.getStatus(limit);
     }
 
     /**

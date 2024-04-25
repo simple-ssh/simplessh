@@ -46,8 +46,8 @@ public class DomainsServices{
         String name = request.getParameter("name");
         String type = request.getParameter("type");
 
-        name =  name +(type.contains("off")? ".suspended" :  ".conf");
-         ssh.execute("move", id, "/etc/nginx/conf.d/" + name, "/etc/nginx/conf.d/" + name);
+         ssh.execute("move", id, "/etc/nginx/conf.d/" + name+(type.contains("on")? ".suspended" : ".conf"),
+                                                 "/etc/nginx/conf.d/" + name+(type.contains("on")? ".conf" : ".suspended"));
 
          ssh.execute("nginx_restart", id );
 
@@ -90,6 +90,11 @@ public class DomainsServices{
                     "                 proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n" +
                     "                 proxy_set_header X-Forwarded-Proto \\$scheme;\n" +
                     "                 proxy_set_header X-Forwarded-Port \\$server_port;\n" +
+                    "                 proxy_set_header Host \\$host;\n" +
+                    "                 proxy_set_header X-Real-IP \\$remote_addr;\n" +
+                    "                 proxy_http_version 1.1;\n" +
+                    "                 proxy_set_header Upgrade \\$http_upgrade;\n" +
+                    "                 proxy_set_header Connection \"upgrade\";" +
                     "             }\n" +
                     "             location ~ \\.log {\n" +
                     "                deny  all;\n" +

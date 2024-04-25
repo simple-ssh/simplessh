@@ -6,3 +6,10 @@
 /front/
 /logs/
 /target/
+/data-setore.jceks
+/src/logs/
+*.log
+*.jceks
+/front2/node_modules/
+.gitignore
+/src/logs/

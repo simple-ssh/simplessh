@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import simplessh.com.services.CustomUserDetailsService;
 
+import java.util.Collections;
 
 /**
  * security config file
@@ -66,7 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
+           http .cors().and().csrf().disable()
                 .exceptionHandling()
                 .authenticationEntryPoint(unauthorizedHandler).and()
                  //.addFilter( new JWTAuthorizationFilter(authenticationManager()))

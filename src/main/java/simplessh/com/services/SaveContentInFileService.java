@@ -42,7 +42,8 @@ public class SaveContentInFileService {
             session.connect(30000);
 
            list.forEach(e-> {
-               String path= e.getOrDefault("fullPathWithName","");
+               String path= e.getOrDefault("path","")+"/"+e.getOrDefault("fileName","");
+                      path= path.replaceAll("//","/");
                try {
                 //Open shell channel
                 ChannelExec channel = (ChannelExec) session.openChannel("exec");
