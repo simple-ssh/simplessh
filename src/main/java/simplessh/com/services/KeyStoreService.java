@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.List;
  * This service is for key store
  */
 @Service
+@Slf4j
 public class KeyStoreService {
     public String fileKeyStoreName = "data-setore.jceks";
 
@@ -60,7 +62,7 @@ public class KeyStoreService {
             PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(ske.getSecretKey(), PBEKeySpec.class);
             value = new String(keySpec.getPassword());
         }catch (Exception e){
-            System.out.printf("Error get:"+e.getMessage());
+            log.error("Error get:"+e.getMessage());
         }
 
         return value;
@@ -135,7 +137,7 @@ public class KeyStoreService {
              Type type = new TypeToken<LinkedHashMap<String,String>>(){}.getType();
              users = (new Gson()).fromJson(json, type);
          }catch (Exception e){
-             System.out.println("error to convert:"+e.getMessage());
+             log.error("error to convert:"+e.getMessage());
          }
 
         return users;
@@ -152,7 +154,7 @@ public class KeyStoreService {
             Type type = new TypeToken<List<SshAccount>>(){}.getType();
             users = (new Gson()).fromJson(json, type);
         }catch (Exception e){
-            System.out.println("error to convert:"+e.getMessage());
+            log.error("error to convert:"+e.getMessage());
         }
 
         return users == null ? new ArrayList<>() : users;
@@ -169,7 +171,7 @@ public class KeyStoreService {
             Type type = new TypeToken<List<SshAccount>>(){}.getType();
             users = (new Gson()).fromJson(json, type);
         }catch (Exception e){
-            System.out.println("error to convert:"+e.getMessage());
+            log.error("error to convert:"+e.getMessage());
         }
 
         if(users != null && users.size()>0){
@@ -197,7 +199,6 @@ public class KeyStoreService {
             char[] pass= passToFile.toCharArray();
 
             try{
-
                 KeyStore ks = KeyStore.getInstance("JCEKS");
                 ks.load(null, pass);
                 FileOutputStream out = new FileOutputStream(fileName);
@@ -210,12 +211,11 @@ public class KeyStoreService {
 
                 setEntryKeyStore(ks, "jwtkey",base64Key);
 
-
                 ks.store(out,pass);
                 out.close();
 
             }catch (Exception e){
-                System.out.printf("Error set:"+e.getMessage());
+               log.error("Error set:"+e.getMessage());
             }
         }
 

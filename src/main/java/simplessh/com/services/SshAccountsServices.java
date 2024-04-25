@@ -43,27 +43,26 @@ public class SshAccountsServices {
             data.setId(Helpers.getAlphaNumericString(7));
             acc.add(data);
         }else{
-            acc.forEach(e->{  if(e.getId().compareTo(data.getId())==0){
-                                 e.setPlatform(data.getPlatform());
-                                 e.setSshHost(data.getSshHost());
-                                 e.setSshLog(data.getSshLog());
+            acc.stream().filter(e->e.getId().compareTo(data.getId())==0)
+                        .forEach(e->{
+                             e.setPlatform(data.getPlatform());
+                             e.setSshHost(data.getSshHost());
+                             e.setSshLog(data.getSshLog());
 
-                                 if(data.getSshPass().compareTo("****")!=0)
-                                   e.setSshPass(data.getSshPass());
+                             if(data.getSshPass().compareTo("****")!=0)
+                               e.setSshPass(data.getSshPass());
 
-                                 if(data.getSshPem().compareTo("****")!=0)
-                                   e.setSshPem(data.getSshPem());
-
-
-                                 e.setMysqlLog(data.getMysqlLog());
-
-                                 if(data.getMysqlPass().compareTo("****")!=0)
-                                   e.setMysqlPass(data.getMysqlPass());
-
-                                 e.setFast(data.getFast());
+                             if(data.getSshPem().compareTo("****")!=0)
+                               e.setSshPem(data.getSshPem());
 
 
-            }});
+                             e.setMysqlLog(data.getMysqlLog());
+
+                             if(data.getMysqlPass().compareTo("****")!=0)
+                               e.setMysqlPass(data.getMysqlPass());
+
+                             e.setFast(data.getFast());
+                        });
 
         }
 
