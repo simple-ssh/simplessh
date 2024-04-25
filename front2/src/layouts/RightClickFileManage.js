@@ -30,7 +30,57 @@ const RightClickFileManage = (props) => {
       />
   */
 
+const extractArchive = () => {
+        // Code for extracting archive
+    };
 
+    const editFile = () => {
+        // Code for editing file
+    };
+
+    const rename = () => {
+        // Code for renaming
+    };
+
+    const download = () => {
+        // Code for downloading
+    };
+
+    const copyFullPath = () => {
+        // Code for copying full path
+    };
+
+    const emptyFile = () => {
+        // Code for emptying file content
+    };
+
+    const removeItems = () => {
+        // Code for removing items
+    };
+
+    const checkFolderSize = () => {
+        // Code for checking folder size
+    };
+
+    const showPermissionDialog = () => {
+        // Code for showing permission dialog
+    };
+
+    const changePermission = () => {
+        // Code for changing permission
+    };
+
+    const changeOwner = () => {
+        // Code for changing owner
+    };
+
+    const addToArchive = () => {
+        // Code for adding to archive
+    };
+
+    const copyOrMove = () => {
+        // Code for copying or moving
+    };
 
   return (
     <>

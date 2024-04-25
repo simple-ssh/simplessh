@@ -319,7 +319,7 @@ class Domains extends React.Component {
                       <a href="#" onClick={e=>this.onOff(e, row.name, "off")}>
                          <span class="bulbActive"><i class="bi bi-toggle-on bigIconSize"></i></span>
                       </a> :
-                      <a href="#" onClick={e=>this.onOff(e, row.name, "on" )}>
+                      <a href="#" onClick={e=>this.onOff(e, row.name, "on" )} class="bulbDeactivated">
                          <i class="bi bi-toggle-off bigIconSize"></i>
                       </a>}
                  </td>
@@ -338,7 +338,7 @@ class Domains extends React.Component {
                           </a>
                           &nbsp; <a href="#" onClick={e=>this.renewSSL(e)} title="Renew">
                                     <i class="bi bi-arrow-clockwise bigIconSize"></i>
-                                 </a>
+                            </a>
                        </>
                       }
 

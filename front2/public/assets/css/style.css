@@ -9,6 +9,11 @@
     padding-top: 0 !important;
 
   }
+  .table {
+   --bs-table-hover-color: #212529;
+    --bs-table-hover-bg: rgba(34, 127, 194, 0.3);
+    color: #212529;
+  }
   .positionFixed {
     position: relative !important;
     top:  auto !important;
@@ -48,6 +53,9 @@
   background: #fff;
   border-radius:15px;
  }
+.textCenter{
+   text-align: center;
+}
 
 .successOperation{
     position:fixed;
@@ -2090,9 +2098,11 @@ input:checked + .slider:before {
     font-size:13px;
 }
 .bulbActive{
- color:#ccb016;
+ color:#265296;
 }
-
+.bulbDeactivated{
+ color:#9f9f9f;
+}
 .bigIconSize{
     font-size: 24px;
 }
@@ -2613,7 +2623,8 @@ input:checked + .slider:before {
     .terminal-body p {
         margin: 1px 0;
         padding: 0;
-        line-height: 1.2;
+        line-height: 1.1;
+        font-size:14px;
     }
 
   .terminal-header {

@@ -106,9 +106,9 @@ class FileManager extends Component {
   }
 
 // getListOfUser
- getData =(e, noAdd=false)=>{
+ getData =(e, pathTo='', noAdd=true)=>{
      e.preventDefault();
-     var path = e.target.attributes.getNamedItem('data-path').value;
+     var path = pathTo=='' ? e.target.attributes.getNamedItem('data-path').value : pathTo;
 
      let currentPath = noAdd? path : this.state.currentPath+"/"+path;
      currentPath = currentPath.replaceAll("///","/");
@@ -208,6 +208,16 @@ class FileManager extends Component {
       localStorage.setItem("favorite", JSON.stringify(pathsArray));
     }
   }
+
+  goToUrl =(e)=>{
+     e.preventDefault();
+     let path = window.prompt("Go to url",this.state.currentPath );
+      if (path == null || path =="")
+         return null;
+
+      this.getData(e, path);
+ }
+
 // breadcrumb
 breadCrumb=()=>{
     var indents = [];
@@ -217,7 +227,7 @@ breadCrumb=()=>{
       if(split[i] != "" && split[i] != "/"){
           path= path+"/"+split[i];
           indents.push(<li class="breadcrumb-item" >
-                          <a href="#" onClick={e=>this.getData(e, true)} data-path={path} title={path}>
+                          <a href="#" onClick={this.getData} data-path={path} title={path}>
                             {split[i]}
                           </a>
                        </li>);
@@ -227,7 +237,7 @@ breadCrumb=()=>{
     return ( <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                   <li class="breadcrumb-item">
-                      <a href="#" onClick={e=>this.getData(e, "/", true)} title="/" data-path="/" >
+                      <a href="#" onClick={this.getData} title="/" data-path="/" >
                         <i class="bi bi-house-door" data-path="/"></i>
                       </a>
                   </li>
@@ -236,6 +246,11 @@ breadCrumb=()=>{
                      <a href="#" onClick={e=>this.addToFavorite(e, "/")} title="Add to favorite">
                        <i class="bi bi-clipboard-plus"></i>
                      </a>
+                  </li>
+                  <li class="breadcrumb-item copy_icon">
+                       <a href="#" onClick={this.goToUrl} title="Go to url">
+                         <i class="bi bi-pencil-square"></i>
+                       </a>
                   </li>
                  </ol>
                  <div class="quickLinkDiv">
@@ -246,37 +261,37 @@ breadCrumb=()=>{
 
                      <ul class="dropdown-menu dropDawnSubMenu" id="menuFavorite">
                            <li>
-                               <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/etc/", true)} title="/etc/" data-path="/etc/" >
+                               <a href="#" class="dropdown-item" onClick={this.getData} title="/etc/" data-path="/etc/" >
                                 /etc/
                               </a>
                            </li>
                            <li>
-                             <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/var/", true)} title="/var/" data-path="/var/" >
+                             <a href="#" class="dropdown-item" onClick={this.getData} title="/var/" data-path="/var/" >
                                 /var/
                               </a>
                            </li>
                             <li>
-                              <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/var/log", true)} title="/var/log/" data-path="/var/log/" >
+                              <a href="#" class="dropdown-item" onClick={this.getData} title="/var/log/" data-path="/var/log/" >
                                  /var/log/
                                </a>
                             </li>
                             <li>
-                              <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/var/mail/", true)} title="/var/mail/" data-path="/var/mail/" >
+                              <a href="#" class="dropdown-item" onClick={this.getData} title="/var/mail/" data-path="/var/mail/" >
                                  /var/mail/
                                </a>
                             </li>
                             <li>
-                               <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/etc/postfix/", true)} title="/etc/postfix/" data-path="/etc/postfix/" >
+                               <a href="#" class="dropdown-item" onClick={this.getData} title="/etc/postfix/" data-path="/etc/postfix/" >
                                 /etc/postfix/
                               </a>
                            </li>
                            <li>
-                              <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/etc/dovecot/", true)} title="/etc/dovecot/" data-path="/etc/dovecot/" >
+                              <a href="#" class="dropdown-item" onClick={this.getData} title="/etc/dovecot/" data-path="/etc/dovecot/" >
                                /etc/dovecot/
                              </a>
                           </li>
                           <li>
-                             <a href="#" class="dropdown-item" onClick={e=>this.getData(e, "/etc/nginx/", true)} title="etc/nginx/" data-path="/etc/nginx/" >
+                             <a href="#" class="dropdown-item" onClick={this.getData} title="etc/nginx/" data-path="/etc/nginx/" >
                               /etc/nginx/
                             </a>
                           </li>
@@ -284,7 +299,7 @@ breadCrumb=()=>{
 
                            {this.state.favorite.map(link=>
                                <li>
-                                  <a href="#" class="dropdown-item breakWordMenu" onClick={e=>this.getData(e, link, true)} title={link} data-path={link} >
+                                  <a href="#" class="dropdown-item breakWordMenu" onClick={this.getData} title={link} data-path={link} >
                                    {link}
                                   </a>
 
@@ -297,14 +312,14 @@ breadCrumb=()=>{
                      </ul>
                    </div>
 
-                  <a href="#" class="quickLinksFileManager" onClick={e=>this.getData(e, "/home/", true)} title="/home/" data-path="/home/" >
+                  <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/home/" data-path="/home/" >
                        /home
                    </a>
 
-                   <a href="#" class="quickLinksFileManager" onClick={e=>this.getData(e, "/var/www/", true)} title="/var/www/" data-path="/var/www/" >
+                   <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/var/www/" data-path="/var/www/" >
                          /var/www
                     </a>
-                  <a href="#" class="quickLinksFileManager" onClick={e=>this.getData(e, "/var/trash/", true)} title="/var/trash/" data-path="/var/trash/" >
+                  <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/var/trash/" data-path="/var/trash/" >
                      <i class="bi bi-trash-fill" data-path="/var/trash/"></i> Trash
                   </a>
                   <a href="#" class="quickLinksFileManager" style={{color:"red"}} onClick={this.emptyTrash}  >
@@ -780,7 +795,7 @@ breadCrumb=()=>{
                  <td> <input class="checkboxBulk" type="checkbox" value={this.state.currentPath+"/"+row.name}/></td>
                 <td>
                  {row.type =="1" ?
-                  <a href="#" onClick={e=>this.getData(e, false)} data-path={row.name} style={{fontStyle:"bold"}}
+                  <a href="#" onClick={e=>this.getData(e, row.name, false)} data-path={row.name} style={{fontStyle:"bold"}}
                        title={this.state.currentPath+"/"+row.name}>
                      <i class="bi bi-folder-fill" data-path={row.name}></i> {row.name}
                   </a>:

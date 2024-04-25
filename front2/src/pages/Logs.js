@@ -9,23 +9,35 @@ class Home extends React.Component {
 
  constructor(props) {
        super(props);
-       this.state = {logs:"" }
+       this.state = {logs:"", limit:150 }
  }
 
  componentDidMount(){
      showLoad();
-     axios.get(window.API_URL+'get-logs',  headers() )
-               .then(res => {
+     this.getLogs(150);
+  }
 
-                  var logs = res.data.replace(/(?:\r\n|\r|\n)/g, '<br/>');
-                      logs = logs.replace(/  /g,"&nbsp;&nbsp;");
 
-                  this.setState({logs: logs});
-                  hideLoad();
-               }).catch(error => {
-                  hideLoad();
-               });
+  handleLogs =(e)=>{
+    e.preventDefault();
+    const limit = this.state.limit + 150;
+    this.setState({limit:limit});
+    this.getLogs(limit);
+  }
 
+  getLogs =(limit)=>{
+      showLoad();
+      axios.get(window.API_URL+'get-logs?limit='+limit,  headers() )
+         .then(res => {
+
+            var logs = res.data.replace(/(?:\r\n|\r|\n)/g, '<br/>');
+                logs = logs.replace(/  /g,"&nbsp;&nbsp;");
+
+            this.setState({logs: logs});
+            hideLoad();
+         }).catch(error => {
+            hideLoad();
+         });
   }
 
    clearLogs =(e)=>{
@@ -51,7 +63,10 @@ class Home extends React.Component {
           <div class="col-md-12" style={{minHeight:"80vh"}}>
                <a onClick={this.clearLogs} href="#" class="btn btn-primary btn_small">Clear log</a>
                <hr/>
-              <div dangerouslySetInnerHTML={{ __html: this.state.logs }} />
+               <div dangerouslySetInnerHTML={{ __html: this.state.logs }} />
+               <p class="textCenter">
+                 <a href="#" class="btn btn-primary btn_small" onClick={this.handleLogs}>Get More</a>
+               </p>
           </div>
          </div>
     );

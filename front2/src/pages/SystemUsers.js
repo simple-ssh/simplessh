@@ -32,7 +32,19 @@ class SystemUsers extends React.Component {
                  });
   }
 
-
+// getListOfUser
+ changeTokenAccess =(e)=>{
+     e.preventDefault();
+     showLoad();
+     axios.get(window.API_URL+'change-token-access',  headers() )
+                .then(res => {
+                     hideLoad();
+                     alert(res.data);
+                  }).catch(error => {
+                     handleError(error);
+                     hideLoad();
+                 });
+  }
 // change password
   changePassword =(e, name="" )=>{
        e.preventDefault();
@@ -109,7 +121,9 @@ class SystemUsers extends React.Component {
              <div class="col-md-3">
                <button class="btn btn-primary btn_small" type ="submit" >Add New User</button>
              </div>
-
+            <div class="col-md-3 text_align_right" >
+               <a href="#" class="btn btn-primary btn_small" onClick={this.changeTokenAccess}>Change Token Access</a>
+             </div>
            </div>
          </form>
            <div class="clear"></div>

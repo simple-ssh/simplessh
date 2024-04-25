@@ -9,6 +9,7 @@ const defaultAdminLang = "en";
 export const headers=()=>{
   var id = localStorage.getItem("id");
   var token = getCookie("tokenauth");
+  //var userIdentifier = random(40) getCookie("tokenauth");
 
   return { headers :{ id: id,
                      //Access-Control-Allow-Origin: "*",
@@ -29,7 +30,10 @@ export const innerHeaders=(singleToken="")=>{
             singleToken: singleToken,
             AccessControlAllowOrigin: "*",
             Accept: '*',
-            transports: ['websocket', 'polling', 'flashsocket']
+            //Upgrade: 'websocket', // Add the Upgrade header
+            //Connection: 'Upgrade',
+            //'Sec-WebSocket-Version': '13',
+            transports: ['websocket', 'polling', 'flashsocket']//
             }  ;
 }
 

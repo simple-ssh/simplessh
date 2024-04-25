@@ -15,7 +15,7 @@ class TerminalBody extends React.Component {
   constructor(props) {
        super(props);
        this.state = {rows : [],
-                    response :  "",
+                     response :  "",
                      messages: [],
                      stompClient: null,
                      request:{},
@@ -63,12 +63,11 @@ getSessionSuggestion =()=>{
 
  useEffect=() => {
       // initiate stomp
-     const stompClient = Stomp.client('ws://localhost:9211/api/ws1');
+     const stompClient = Stomp.client(window.TERMINAL_URL);
      stompClient.debug = () => {};
      // connect to socket
      stompClient.connect(innerHeaders(this.singleToken), (message) => {
        this.setState({stompClient:stompClient});
-       console.log("message:", message.headers['session']);
          /*
            any message came from backend will be seted here, when we send a message and receive back message will be push here
            ws.onmessage = (evt) => {
@@ -85,11 +84,11 @@ getSessionSuggestion =()=>{
         });
 
          // Check if the subscription is active
-        if (subscription && subscription.id) {
+        /*if (subscription && subscription.id) {
             console.log('Subscription successful. Subscription ID:', subscription.id);
         } else {
             console.error('Subscription failed');
-        }
+        }*/
 
      }, (error) => {
        // Handle connection errors
@@ -111,7 +110,7 @@ getSessionSuggestion =()=>{
      }
 
     if(this.state.stompClient == null){
-      this.setState(prevState => ({  messages: [...prevState.messages,  "The chanel is closed, refresh the page !!!!" ] }));
+      this.setState(prevState => ({  messages: [...prevState.messages,  "The chanel is closed, refresh the page, or check the ssh connection data." ] }));
       this.divRef.current.scrollTop = this.divRef.current.scrollHeight+20;
     }
 

@@ -84,7 +84,7 @@ constructor(props) {
 
     getLogs=(e)=>{
       e.preventDefault();
-      axios.get(window.API_URL+'get-logs',  headers() )
+      axios.get(window.API_URL+'get-logs?limit=150',  headers() )
            .then(res => {
               showAlert(res.data);
            }).catch(error => { });
