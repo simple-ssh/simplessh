@@ -9,6 +9,7 @@ import simplessh.com.Helpers;
 import simplessh.com.dao.SshAccount;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,11 +31,7 @@ public class SshAccountsServices {
      * get list of ssh account
      */
     public List<SshAccount> getList() {
-         List<SshAccount> acc = keyStoreService.getSshAcconts();
-
-        acc.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
-
-        return acc ;
+        return setStars(keyStoreService.getSshAcconts());
     }
 
     /**
@@ -72,8 +69,7 @@ public class SshAccountsServices {
 
         //save data to keystore unde the entry name: sshAccounts
         keyStoreService.setKeyStoreValue("sshaccounts", (new Gson()).toJson(acc));
-        acc.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
-       return acc;
+        return setStars(acc);
     }
 
     public String changeJWTToken(){
@@ -94,20 +90,21 @@ public class SshAccountsServices {
 
         //save data to keystore unde the entry name: sshaccounts
          keyStoreService.setKeyStoreValue("sshaccounts", (new Gson()).toJson(acc));
-
-        acc.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
-
-        return acc;
+         return setStars(acc);
     }
 
     /**
      * get list for bottom select
      */
     public List<SshAccount> getListHeader() {
-        List<SshAccount> acc = keyStoreService.getSshAcconts();
-        acc.forEach(e->{  e.setSshPass(""); e.setSshPem(""); e.setMysqlLog("");   e.setMysqlPass(""); });
-        return acc;
+        return setStars(keyStoreService.getSshAcconts());
     }
 
+    private List<SshAccount> setStars(List<SshAccount> acc){
+        if(acc != null)
+          acc.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
+
+       return acc == null ? new ArrayList<>() : acc;
+    }
 
 }
