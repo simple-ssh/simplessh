@@ -4,12 +4,9 @@ import com.google.gson.Gson;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import simplessh.com.Helpers;
 import simplessh.com.dao.SshAccount;
-
 import javax.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.List;
@@ -23,7 +20,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class SshAccountsServices {
-
     private KeyStoreService keyStoreService;
 
     public SshAccountsServices(KeyStoreService keyStoreService) {
@@ -32,7 +28,6 @@ public class SshAccountsServices {
 
     /**
      * get list of ssh account
-     * @return
      */
     public List<SshAccount> getList() {
          List<SshAccount> acc = keyStoreService.getSshAcconts();
@@ -44,8 +39,6 @@ public class SshAccountsServices {
 
     /**
      * insert update ssh account
-     * @param data
-     * @return
      */
    public List<SshAccount> addDataInTheTable(SshAccount data ) {
         List<SshAccount> acc = keyStoreService.getSshAcconts();
@@ -79,11 +72,8 @@ public class SshAccountsServices {
 
         //save data to keystore unde the entry name: sshAccounts
         keyStoreService.setKeyStoreValue("sshaccounts", (new Gson()).toJson(acc));
-
-        List<SshAccount> returnData = acc;
-        returnData.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
-
-        return returnData;
+        acc.forEach(e->{ e.setSshPassStar();  e.setSshPemStar(); e.setMysqlPassStar(); });
+       return acc;
     }
 
     public String changeJWTToken(){
@@ -95,8 +85,6 @@ public class SshAccountsServices {
 
     /**
      * remove ssh account by key
-     * @param request
-     * @return
      */
 
     public List<SshAccount> removeAccount(HttpServletRequest request) {
@@ -114,7 +102,6 @@ public class SshAccountsServices {
 
     /**
      * get list for bottom select
-     * @return
      */
     public List<SshAccount> getListHeader() {
         List<SshAccount> acc = keyStoreService.getSshAcconts();
