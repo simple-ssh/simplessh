@@ -48,6 +48,7 @@ public class SshAccountsServices {
                              e.setPlatform(data.getPlatform());
                              e.setSshHost(data.getSshHost());
                              e.setSshLog(data.getSshLog());
+                             e.setSshPort(data.getSshPort());
 
                              if(data.getSshPass().compareTo("****")!=0)
                                e.setSshPass(data.getSshPass());

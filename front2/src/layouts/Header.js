@@ -2,14 +2,12 @@ import React from 'react'
 import axios from 'axios';
 import { headers, hideLoad, showLoad, showAlert, eraseCookie, logout } from './../Helpers.js';
 
-
-
 class Header extends React.Component {
  sessionStorageName ="tokenauth";
 
  constructor(props) {
        super(props);
-       this.state = {accounts : [], activeAcc:"", isLogin: true, mobileMenuOpen:false  }
+       this.state = {accounts : [], activeAcc:"", isLogin: true, mobileMenuOpen:false, lastUrl:"#/database-mysql"  }
   }
 
  componentDidMount(){
@@ -22,8 +20,7 @@ class Header extends React.Component {
                for(var j=0;j<classesMenu2.length;j++)
                 classesMenu2[j].classList.remove("active");
 
-               this.classList.add("active");
-
+              this.classList.add("active");
 
               if(_this.state.mobileMenuOpen && !this.classList.contains("parentItem")){
                  document.getElementById("navbarCollapse").style.display= "none" ;
@@ -36,11 +33,18 @@ class Header extends React.Component {
    }
 
 
+  pushDbUrl =(e)=>{
+   e.preventDefault();
+    const lastUrl = localStorage.getItem("lastClickedUrl");
+    if(lastUrl != null)
+    this.setState({lastUrl: lastUrl});
+ }
+
  showSubmenu =(e, id="")=>{
    e.preventDefault();
    document.getElementById(id).style.display= document.getElementById(id).style.display=="block" ? "none":"block";
-
  }
+
  hideMenu =(id="")=>{
    document.getElementById(id).style.display=  "none" ;
  }
@@ -142,6 +146,11 @@ class Header extends React.Component {
                             <i class="bi bi-person"></i> Database Users
                           </a>
                         </li>
+                        <li>
+                          <a class="nav-link" href={window.BASE_URL+this.state.lastUrl} >
+                           <i class="bi-link"></i> Last click
+                          </a>
+                        </li>
                        </ul>
                     </li>
                     <li class="nav-item">
@@ -177,7 +186,7 @@ class Header extends React.Component {
            </div>
          </nav>
        </header>
-
+          <a href="#" onClick={this.pushDbUrl} id="trigerUpdateUrlToLastUrl" style={{display:"none"}}></a>
       </>
     );
   }

@@ -1,5 +1,6 @@
 package simplessh.com.terminal;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 import simplessh.com.config.JwtUtils;
 import simplessh.com.services.CustomUserDetailsService;
 
-
+@Slf4j
 @Component
 public class WebsocketAuthInterceptor  implements ChannelInterceptor {
     @Autowired
@@ -32,12 +33,16 @@ public class WebsocketAuthInterceptor  implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand()) && singleToken!=null) {
 
-            if(jwtUtils.validateJwtToken(jwt))
-             terminalWebsocketService.init(sessionId, singleToken, connectionId);
-            else
-             terminalWebsocketService.close(sessionId);
+            if (jwtUtils.validateJwtToken(jwt)){
+                terminalWebsocketService.init(sessionId, singleToken, connectionId);
+            }else{
+              log.info("Disconnected here 104");
+              terminalWebsocketService.close(sessionId);
+            }
          } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-             terminalWebsocketService.close(sessionId);
+            log.info("Disconnected here 105");
+            terminalWebsocketService.close(sessionId);
+
         }
 
         return message;

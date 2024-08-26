@@ -45,6 +45,11 @@ class DatabaseTablesData extends React.Component {
        }catch(err){}*/
 
        this.getData(this.props.params.dbname, this.props.params.tbname);
+
+       try{
+              localStorage.setItem("lastClickedUrl", "#/database-mysql-table-data/"+this.props.params.dbname+"/"+this.props.params.tbname);
+              document.getElementById("trigerUpdateUrlToLastUrl").click();
+        }catch(err){}
        //bulkUncheckAll("checkboxBulk");
 
  }

@@ -14,14 +14,14 @@ class DatabaseServiceTest {
 
     @Test
     void getDataListEmpty() {
-        DatabaseService db = new DatabaseService(mock(SshCommand.class));
+        DatabaseService db = new DatabaseService(mock(SshCommand.class), mock(DatabaseTablesServices.class));
         List<Map<String,String>> data = db.getDataList("");
         assertTrue(data.size()==0);
     }
 
     @Test
     void getDataListNotEmpty() {
-        DatabaseService db = new DatabaseService(mock(SshCommand.class));
+        DatabaseService db = new DatabaseService(mock(SshCommand.class), mock(DatabaseTablesServices.class));
         String st = "db\tuser\thost\n" +
                 "db1\tuser1\tlocalhost\n" +
                 "db2\tuser1\tlocalhost\n" +

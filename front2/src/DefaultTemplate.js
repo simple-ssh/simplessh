@@ -26,6 +26,7 @@ import Logs from './pages/Logs';
 import Groups from './pages/Groups';
 import SubGroups from './pages/SubGroups';
 import DnsEditor from './pages/DnsEditor';
+import PopupCodeEditor from './pages/PopupCodeEditor';
 /*** end Routers**/
 
 class DefaultTemplate extends React.Component {
@@ -84,13 +85,11 @@ constructor(props) {
 
     getLogs=(e)=>{
       e.preventDefault();
-      axios.get(window.API_URL+'get-logs?limit=150',  headers() )
+      axios.get(window.API_URL+'get-logs?limit=250',  headers() )
            .then(res => {
               showAlert(res.data);
            }).catch(error => { });
     }
-
-
 
 
 render() {
@@ -140,9 +139,11 @@ render() {
                         </Routes>
                      </div>
                    </div>
+                   <PopupCodeEditor/>
                  </div>
                </main>
               </HashRouter>
+
 
               <Footer/>
           </>}

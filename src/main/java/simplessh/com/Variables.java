@@ -200,9 +200,9 @@ public class Variables {
              put("modify_owner_group", "chown -R \"$USER\":%0 %1");
 
              //chown root:www-data /path/to/file
-             put("modify_owner_user_group", "chown %0 %1");
+             put("modify_owner_user_group", "chown -R %0 %1");
 
-             put("update_file_set_owner", "chown %0 %1 && sudo chmod %2 %1");
+             put("update_file_set_owner", "chown -R %0 %1 && sudo chmod %2 %1");
 
              //chown -R "$USER":/path/to/file www-data
              put("add_path_file_to_group_perm", "chown -R \"$USER\":%0 %1 && chmod %2 %1");

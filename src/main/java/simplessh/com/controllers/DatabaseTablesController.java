@@ -20,6 +20,7 @@ public class DatabaseTablesController {
 
     @Autowired
     private DatabaseTablesServices service;
+
     /**
      * get list of database or tables
      * @param id
@@ -27,7 +28,8 @@ public class DatabaseTablesController {
      * @return
      */
     @GetMapping("/get-list-of-database-tables")
-    public List<Map<String, String>> getList(@RequestHeader("id") String id, HttpServletRequest request) {
+    public List<Map<String, String>> getList(@RequestHeader("id") String id,
+                                             HttpServletRequest request) {
 
         return service.getList(id, request);
     }
@@ -41,8 +43,9 @@ public class DatabaseTablesController {
      * @return
      */
     @PutMapping(path = "/add-new-database-table", consumes = "application/json", produces = "application/json")
-    public ListMapResponse addNewDatabase(@RequestHeader("id") String id, @RequestBody List<Map<String,String>> data,
-                                                    HttpServletRequest request) {
+    public ListMapResponse addNewDatabase(@RequestHeader("id") String id,
+                                          @RequestBody List<Map<String,String>> data,
+                                          HttpServletRequest request) {
         return  service.addNewDatabase(id, data, request);
     }
 
@@ -54,7 +57,7 @@ public class DatabaseTablesController {
      */
     @RequestMapping(value ="/remove-database-table", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ListMapResponse remove(@RequestHeader("id") String id,
-                                      @RequestBody Map<String,String> data) {
+                                  @RequestBody Map<String,String> data) {
 
         return service.remove(id, data);
     }
@@ -68,7 +71,7 @@ public class DatabaseTablesController {
      */
     @RequestMapping(value ="/empty-database-table", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ListMapResponse empty(@RequestHeader("id") String id,
-                                     @RequestBody Map<String,String> data) {
+                                 @RequestBody Map<String,String> data) {
 
         return service.empty(id, data);
     }
@@ -80,7 +83,8 @@ public class DatabaseTablesController {
      * @return
      */
     @GetMapping("/get-list-of-database-table-structure")
-    public List<Map<String,String>> getListStructure(@RequestHeader("id") String id, HttpServletRequest request) {
+    public List<Map<String,String>> getListStructure(@RequestHeader("id") String id,
+                                                     HttpServletRequest request) {
 
         return service.getListStructure(id, request);
     }
@@ -92,7 +96,8 @@ public class DatabaseTablesController {
      * @return
      */
     @DeleteMapping("/remove-database-table-column")
-    public ListMapResponse removeField(@RequestHeader("id") String id, HttpServletRequest request) {
+    public ListMapResponse removeField(@RequestHeader("id") String id,
+                                       HttpServletRequest request) {
 
       return service.removeField(id, request);
     }
@@ -118,7 +123,8 @@ public class DatabaseTablesController {
      * @return
      */
     @GetMapping("/get-list-of-database-table-data")
-    public GetTableFullData getListData(@RequestHeader("id") String id, HttpServletRequest request) {
+    public GetTableFullData getListData(@RequestHeader("id") String id,
+                                        HttpServletRequest request) {
 
        return service.getListData(id, request);
     }
@@ -145,7 +151,8 @@ public class DatabaseTablesController {
      * @return
      */
     @DeleteMapping("/remove-database-row")
-    public ListMapResponse removeDatabaseRow(@RequestHeader("id") String id, HttpServletRequest request) {
+    public ListMapResponse removeDatabaseRow(@RequestHeader("id") String id,
+                                             HttpServletRequest request) {
         return service.removeDatabaseRow(id, request);
     }
 
@@ -157,7 +164,7 @@ public class DatabaseTablesController {
      */
     @PutMapping(path = "/execute-query", consumes = "application/json", produces = "application/json")
     public ListMapResponse executeQueryTableData(@RequestHeader("id") String id,
-                                             @RequestBody Map<String ,String>data ) {
+                                                 @RequestBody Map<String ,String>data ) {
 
       return service.executeMysqlQueryTablesData(id,  data );
     }
@@ -170,7 +177,7 @@ public class DatabaseTablesController {
      */
     @PutMapping(path = "/execute-query-tables", consumes = "application/json", produces = "application/json")
     public ListMapResponse executeMysqlQueryTables(@RequestHeader("id") String id,
-                                             @RequestBody Map<String ,String>data ) {
+                                                   @RequestBody Map<String ,String>data ) {
 
         return service.executeMysqlQueryTables(id,  data );
     }

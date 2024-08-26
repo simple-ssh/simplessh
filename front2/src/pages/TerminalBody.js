@@ -31,19 +31,11 @@ class TerminalBody extends React.Component {
        this.divRef = React.createRef();
  }
 
- componentWillUnmount() {
-     if (this.state.stompClient) {
-         this.state.stompClient.disconnect();
-      }
- }
-
  componentDidMount(){
-
-     this.useEffect();
-
+     //this.useEffect();
      // load suggestions
      try{
-         let data = sessionStorage.getItem(this.sessionCommands);
+         let data = localStorage.getItem(this.sessionCommands);
        if(data!=null && data !=""){
          let objRows =JSON.parse(data);
          this.setState({suggestions: objRows });
@@ -51,9 +43,15 @@ class TerminalBody extends React.Component {
       }catch(err){}
  }
 
+ componentWillUnmount() {
+     if (this.state.stompClient) {
+         this.state.stompClient.disconnect();
+      }
+ }
+
 getSessionSuggestion =()=>{
     try{
-       let data = sessionStorage.getItem(this.sessionCommands);
+       let data = localStorage.getItem(this.sessionCommands);
        if(data!=null && data !=""){
             return JSON.parse(data);
         }
@@ -64,6 +62,8 @@ getSessionSuggestion =()=>{
  useEffect=() => {
       // initiate stomp
      const stompClient = Stomp.client(window.TERMINAL_URL);
+     stompClient.heartbeat.outgoing = 20000; // Outgoing heartbeat: 20 seconds
+     stompClient.heartbeat.incoming = 0;      // Incoming heartbeat: disabled
      stompClient.debug = () => {};
      // connect to socket
      stompClient.connect(innerHeaders(this.singleToken), (message) => {
@@ -93,6 +93,7 @@ getSessionSuggestion =()=>{
      }, (error) => {
        // Handle connection errors
        console.error('WebSocket connection error:', error);
+       this.setState({stompClient:null});
      });
 
     }
@@ -106,18 +107,24 @@ getSessionSuggestion =()=>{
     if(!suggestions.includes(text)){
        suggestions.push(event.target.value);
        const uniqueSuggestions = [...new Set(suggestions.filter(item => item.replace(/\n/g, '').trim()))];//suggestions.filter((item, index) => suggestions.indexOf(item) === index);
-       sessionStorage.setItem(this.sessionCommands, JSON.stringify(uniqueSuggestions));
-     }
+       localStorage.setItem(this.sessionCommands, JSON.stringify(uniqueSuggestions));
+    }
 
     if(this.state.stompClient == null){
-      this.setState(prevState => ({  messages: [...prevState.messages,  "The chanel is closed, refresh the page, or check the ssh connection data." ] }));
+      this.useEffect();
+      this.setState(prevState => ({  messages: [...prevState.messages,  "Establishing the connection.... If nothing happen, update the page" ] }));
       this.divRef.current.scrollTop = this.divRef.current.scrollHeight+20;
+      // Execute the message sending logic after a delay of 2 seconds
+      setTimeout(() => {
+        this.state.stompClient.send('/send-data/terminal', innerHeaders(this.singleToken), JSON.stringify({'command': text}));
+      }, 2000);
     }
 
     if(text!="" && this.state.stompClient != null){
       this.state.stompClient.send('/send-data/terminal', innerHeaders(this.singleToken), JSON.stringify({'command': text}));
     }
-     this.setState({commandEntered :'', stopShowingSuggestion:false});
+
+    this.setState({commandEntered :'', stopShowingSuggestion:false});
   }
 
  handleChange = (event) => {
@@ -148,9 +155,11 @@ getSessionSuggestion =()=>{
        }
 
 
+    }else if (event.key === 'Escape') {
+      this.setState({ showSuggestion:'none'});
     }else if (event.key === 'ArrowUp') {
       this.setState({ suggestionNr: this.state.suggestionNr<=0 ? suggestionsLength-1 : this.state.suggestionNr-1});
-    } else if (event.key === 'ArrowDown') {
+    }else if (event.key === 'ArrowDown') {
        this.setState({ suggestionNr: this.state.suggestionNr >= suggestionsLength-1 ? 0 : this.state.suggestionNr+1});
      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
        this.setState({showSuggestion:'none', stopShowingSuggestion:true});

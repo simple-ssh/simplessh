@@ -40,7 +40,7 @@ public class DatabaseTablesServices extends PerformDataImpl{
      * @param database name of database
      * @return
      */
-    private List<Map<String, String>> getDataList(String id, String database){
+    public List<Map<String, String>> getDataList(String id, String database){
         String data = ssh.execute("mysql_show_table_from_db_with_size", id, database);
         data = data.trim().replaceAll("\t", " ");
 

@@ -1,0 +1,13 @@
+$config['smtp_host'] = 'tls://arendalhudpleie.no';
+$config['imap_host'] = 'ssl://arendalhudpleie.no';
+$config['imap_port'] = 993;
+$config['smtp_port'] = 587;
+$config['smtp_user'] = '%u';
+$config['smtp_pass'] = '%p';
+$config['smtp_auth_type'] = 'PLAIN';
+$config['smtp_conn_options'] = array(
+  'ssl'         => array(
+  'verify_peer'      => false,
+  'verify_peer_name' => false,
+ ),
+);

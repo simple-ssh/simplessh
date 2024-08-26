@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { headers, hideLoad, handleError,  showLoad, showAlert } from './../Helpers.js';
 import axios from 'axios';
 import serialize from 'form-serialize';
-import PopupCodeEditor from './PopupCodeEditor';
-
 
 class Firewall extends React.Component {
  sessionStorageName = 'list-of-services';
@@ -223,7 +221,7 @@ class Firewall extends React.Component {
                 </p>
             </div>
          </div>
-         <PopupCodeEditor editsRows={this.state.editsRows} />
+
       </>
     );
   }

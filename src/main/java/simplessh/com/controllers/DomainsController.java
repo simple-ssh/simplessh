@@ -30,6 +30,8 @@ public class DomainsController {
         return service.getList(id);
     }
 
+
+
     /**
      * suspend domain
      * @param id

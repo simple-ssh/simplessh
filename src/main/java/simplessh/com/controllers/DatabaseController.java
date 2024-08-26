@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import simplessh.com.request.DataBaseNewRequest;
+import simplessh.com.response.ImportResponse;
 import simplessh.com.services.DatabaseService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,9 +79,10 @@ public class DatabaseController {
      * @return
      */
     @PutMapping(path = "/import-database")
-    public String importDb(@RequestHeader("id") String id, HttpServletRequest request,
-                           @RequestParam("file") MultipartFile file) {
-      return  service.importDb(id, request, file);
+    public ImportResponse importDb(@RequestHeader("id") String id, HttpServletRequest request,
+                                   @RequestParam("file") MultipartFile file) {
+
+      return service.importDb(id, request, file);
     }
 
     /**USERS PART**/

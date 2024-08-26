@@ -138,7 +138,7 @@ public class TerminalWebsocketService {
             jSch.addIdentity("privateKey.pem", connData.getSshPem().getBytes(), null, null);
 
         //Get the session of jsch
-        Session session = jSch.getSession(connData.getSshLog(), connData.getSshHost(), 22);
+        Session session = jSch.getSession(connData.getSshLog(), connData.getSshHost(), connData.getSshPort());
         session.setConfig(config);
 
         //set password

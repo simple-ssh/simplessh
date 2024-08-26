@@ -1,5 +1,7 @@
 package simplessh.com.dao;
 
+import lombok.Getter;
+
 /**
  * @author Corneli F.
  *
@@ -9,6 +11,7 @@ public class SshAccount {
     private String sshHost;
     private String platform;
     private String sshLog;
+    private Integer sshPort;
     private String sshPass;
     private String sshPem;
     private String mysqlLog;
@@ -26,6 +29,8 @@ public class SshAccount {
                 return platform;
              case "sshLog":
                 return sshLog;
+            case "sshPort":
+                return String.valueOf(sshPort);
             case "sshPass":
                 return sshPass.replace("(","\\(").replace(")","\\)").replace("$","\\$");
             case "sshPem":
@@ -68,6 +73,13 @@ public class SshAccount {
 
     public String getSshLog() {
         return sshLog  == null? "": sshLog;
+    }
+
+    public void setSshPort(Integer sshPort) {
+        this.sshPort = sshPort;
+    }
+    public Integer getSshPort() {
+        return sshPort == null ? 22 : sshPort;
     }
 
     public void setSshLog(String sshLog) {

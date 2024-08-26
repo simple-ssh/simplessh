@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{ //WebS
    @Autowired
    private HandshakeInterceptorImpl handshakeInterceptor;
 
-   // when have time move to this one : https://stackoverflow.com/questions/70418738/how-to-build-a-push-notifications-service-with-spring-and-websocket
+   // inspired from : https://stackoverflow.com/questions/70418738/how-to-build-a-push-notifications-service-with-spring-and-websocket
     /*
     this one use when go with this one: WebSocketConfigurer
     @Override

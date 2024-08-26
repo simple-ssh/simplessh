@@ -724,7 +724,7 @@ breadCrumb=()=>{
             </li>
 
            <li><a class="dropdown-item" href="#" onClick={e=>this.addToArchive(e, this.state.dataName)}>
-                <i class="bi bi-file-earmark-zip"></i> Add to zip</a></li>
+                <i class="bi bi-file-earmark-zip"></i> Compress to zip</a></li>
             <li> <a  class="dropdown-item" href="#" onClick={e=>this.copyOrMove(e, this.state.dataName,"copy")}><i class="bi bi-clipboard-check"></i> Copy</a> </li>
             <li> <a  class="dropdown-item" href="#" onClick={e=>this.copyOrMove(e, this.state.dataName,"move")}><i class="bi bi-arrows-move"></i> Cut</a> </li>
          </>);
@@ -771,7 +771,7 @@ breadCrumb=()=>{
           <a href="#" onClick={e=>this.removeItems(e,"")}><i class="bi bi-trash3"></i> Remove Selected</a>
           <a href="#" onClick={e=>this.changeOwner(e, "", "")}> <i class="bi bi-people"></i> Change Owner</a>
           <a href="#" onClick={e=>this.changePermission(e, "", "-rw-r--r--")}> <i class="bi bi-key"></i> Change Permission</a>
-          <a href="#" onClick={e=>this.addToArchive(e,"")}> <i class="bi bi-file-earmark-zip"></i> Add to zip</a>
+          <a href="#" onClick={e=>this.addToArchive(e,"")}> <i class="bi bi-file-earmark-zip"></i> Compress to zip</a>
        </div>
 
          <div class="height10px"></div>
@@ -868,8 +868,24 @@ breadCrumb=()=>{
                </td>
               </tr>
              )}
+
             </tbody>
           </table>
+          {this.state.rows.length==0 && (
+              <div class="col-md-12">
+                <ul class="menuNavigateWhere">
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/" data-path="/" > / </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#"  onClick={this.getData} title="/var/www/" data-path="/var/www/" > /var/www/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/var/www/" data-path="/home/" > /home/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/etc/" data-path="/etc/" > /etc/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/var/" data-path="/var/" > /var/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/var/log/" data-path="/var/log/" > /var/log/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/var/mail/" data-path="/var/mail/" > /var/mail/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/etc/postfix/" data-path="/etc/postfix/" > /etc/postfix/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="/etc/dovecot/" data-path="/etc/dovecot/" > /etc/dovecot/ </a> </li>
+                  <li> <a class="quickLinksFileManager" href="#" onClick={this.getData} title="etc/nginx/" data-path="/etc/nginx/" > /etc/nginx/ </a> </li>
+               </ul>
+              </div>) }
           </div>
           <div class="col-md-12">
               <p class="text_align_center"> </p>
@@ -910,9 +926,8 @@ breadCrumb=()=>{
           </div>
 
         </div>
-        <a href="#" onClick={this.updateList} id="trigerUpdateList" style={{display:"none"}}></a>
-           <PopupCodeEditor editsRows={this.state.editsRows}  />
-        </div>
+           <a href="#" onClick={this.updateList} id="trigerUpdateList" style={{display:"none"}}></a>
+      </div>
 
 
     );

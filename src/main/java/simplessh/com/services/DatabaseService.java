@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import simplessh.com.dao.Data;
 import simplessh.com.dao.DownloadFile;
 import simplessh.com.request.DataBaseNewRequest;
+import simplessh.com.response.ImportResponse;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -22,8 +24,11 @@ public class DatabaseService{
 
     private SshCommand ssh;
 
-    public DatabaseService(SshCommand ssh) {
+    private DatabaseTablesServices databaseTablesServices;
+
+    public DatabaseService(SshCommand ssh, DatabaseTablesServices databaseTablesServices) {
         this.ssh = ssh;
+        this.databaseTablesServices=databaseTablesServices;
     }
 
     /**
@@ -86,14 +91,16 @@ public class DatabaseService{
      */
 
     public void exportDatabase(HttpServletRequest request, HttpServletResponse response ) throws IOException {
-        String name= request.getParameter("name");
+        String name   = request.getParameter("name");
+        String tables = request.getParameter("tables");
+               tables  = tables!=null && !tables.isEmpty() ? " "+tables : "";
         // check if path /var/easyvps path exist and open the connection
         String idConnection = request.getParameter("id");
         ssh.checkForVarEasyvpsPath(idConnection);
 
         ssh.executeAll(idConnection, new Data("new_empty_file","root","/var/easyvps/"+name+".sql"),
                                      new Data("file_permission","666","/var/easyvps/"+name+".sql"),
-                                     new Data("mysql_export",name, "/var/easyvps/"+name+".sql") );
+                                     new Data("mysql_export",name+tables, "/var/easyvps/"+name+".sql") );
 
         String mimeType = "application/octet-stream";
         response.setContentType(mimeType);
@@ -113,8 +120,9 @@ public class DatabaseService{
      * @return
      */
 
-    public String importDb(String id, HttpServletRequest request, MultipartFile file) {
+    public ImportResponse importDb(String id, HttpServletRequest request, MultipartFile file) {
         String dbname= request.getParameter("dbname");
+        String getList = request.getParameter("getList");
         //connect to server
         ssh.checkForVarEasyvpsPath(id);
 
@@ -130,7 +138,7 @@ public class DatabaseService{
         ssh.executeAll(id, new Data("file_permission","666","/var/easyvps/"+file.getOriginalFilename()),
                            new Data("mysql_import",dbname, "/var/easyvps/"+file.getOriginalFilename()) );
 
-        return "Data base imported.";
+        return new ImportResponse("Data imported", (getList != null ? databaseTablesServices.getDataList(id, dbname) : null) ) ;
     }
 
     /**USERS PART**/

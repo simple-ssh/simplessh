@@ -23,6 +23,11 @@ class DatabaseTablesStructure extends React.Component {
 
  componentDidMount(){
    this.getData(this.props.params.dbname, this.props.params.tbname);
+
+   try{
+     localStorage.setItem("lastClickedUrl", "#/database-mysql-table-structure/"+this.props.params.dbname+"/"+this.props.params.tbname);
+     document.getElementById("trigerUpdateUrlToLastUrl").click();
+   }catch(err){}
  }
 
 getDataInit =(e)=>{

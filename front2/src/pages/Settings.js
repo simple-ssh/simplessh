@@ -135,6 +135,10 @@ checkBoxFast=(e)=>{
                      <input type="text" name="sshHost" class="form-control" required={true} placeholder="192.168.1.1"/>
                    </p>
                    <p>
+                   <small>SSH port</small>
+                    <input type="text" name="sshPort" class="form-control" required={true} defaultValue="22" placeholder="22"/>
+                  </p>
+                   <p>
                     <small>SSH user</small>
                      <input type="text" name="sshLog" class="form-control" onBlur={this.checkBoxFast} required={true} placeholder="root"/>
                    </p>

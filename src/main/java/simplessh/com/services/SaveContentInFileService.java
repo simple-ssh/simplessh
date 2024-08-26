@@ -32,7 +32,7 @@ public class SaveContentInFileService {
             if( !connData.getSshPem().isEmpty() && connData.getSshPass().isEmpty())
                 jsch.addIdentity("privateKey.pem", connData.getSshPem().getBytes(), null, null);
 
-            Session session = jsch.getSession(connData.getSshLog(), connData.getSshHost(), 22);
+            Session session = jsch.getSession(connData.getSshLog(), connData.getSshHost(), connData.getSshPort());
             //set password
             if( !connData.getSshPass().isEmpty())
                 session.setPassword(connData.getSshPass());

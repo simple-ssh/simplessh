@@ -28,8 +28,9 @@ public class TerminalWebsocketController {
             terminalWebsocketService.submitCommand(singleToken, request.getCommand());
         }else{
             if(singleToken != null){
-            terminalWebsocketService.submitCommand(singleToken, "Token Is Down, refresh the page!");
-            terminalWebsocketService.close(singleToken);
+              terminalWebsocketService.submitCommand(singleToken, "Token Is Down, refresh the page!");
+              log.info("Disconnected here 101");
+              terminalWebsocketService.close(singleToken);
             } 
         }
     }

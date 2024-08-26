@@ -42,7 +42,7 @@ public class SshCommand {
               jsch.addIdentity("privateKey.pem", account.getSshPem().getBytes(), null, null);
 
 
-             session = jsch.getSession(account.getSshLog(), account.getSshHost(), 22);
+             session = jsch.getSession(account.getSshLog(), account.getSshHost(), account.getSshPort());
              // here generate session by password file
             if(!account.getSshPass().isEmpty())
                session.setPassword(account.getSshPass());

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 //import AppNavbar from './../layouts/AppNavbar';
 import { Link, useParams } from 'react-router-dom';
 import { headers, hideLoad, handleError,  showLoad, showAlert, getSelectedRows, bulkUncheckAll,
-         generatePassword } from './../Helpers.js';
+         generatePassword, getCookie } from './../Helpers.js';
 import axios from 'axios';
 import serialize from 'form-serialize';
 import { optionType,optionCollation  } from './../layouts/SelectType.js';
@@ -25,7 +25,17 @@ class DatabaseTables extends React.Component {
 
  componentDidMount(){
     this.getData(this.props.params.dbname);
-  }
+
+    try{
+       localStorage.setItem("lastClickedUrl",   "#/database-mysql/"+this.props.params.dbname);
+       document.getElementById("trigerUpdateUrlToLastUrl").click();
+     }catch(err){}
+ }
+
+getDatabaseTables =(e, database)=>{
+   e.preventDefault();
+   this.getData(database);
+}
 
 // getListOfUser or database
  getData =( database)=>{
@@ -60,6 +70,41 @@ class DatabaseTables extends React.Component {
               handleError(error);
               hideLoad();
            });
+   }
+
+ exportTables=(e)=>{
+   e.preventDefault();
+   var ids=getSelectedRows("checkboxBulk");
+    if(ids.length==0)
+         return null;
+
+   window.location.href = window.API_URL+"export-database?name="+this.props.params.dbname+"&tables="+ids.join(" ")+"&id="+localStorage.getItem("id")+"&tok="+getCookie("tokenauth");
+ }
+
+  importDb =(e)=>{
+      e.preventDefault();
+
+      let name = this.props.params.dbname;
+      let files = e.target.files;
+      if(files.length ==0)
+                return null;
+
+      const formData = new FormData();
+
+      formData.append("file", files[0], Date.now()+"."+files[0].name.split(".").pop());
+      formData.append("dbname", name);
+      formData.append("getList", "yes");
+
+      showLoad();
+      axios.put(window.API_URL+'import-database', formData, headers()).
+            then(res => {
+              hideLoad();
+              alert(res.data.response);
+              this.setState({rows: res.data.list });
+            }). catch(error => {
+              handleError(error);
+              hideLoad();
+            });
    }
 
 //remove user
@@ -128,6 +173,7 @@ class DatabaseTables extends React.Component {
        obj.splice(nr, 1);
     this.setState({ fieldsList:obj  });
  }
+
 
  updValue=(e, index,  type="inp")=>{
     let listObj = [ ...this.state.fieldsList];
@@ -273,24 +319,32 @@ closeNewTable=(e)=>{
               <nav aria-label="breadcrumb">
                  <ol class="breadcrumb databaseBread">
                   <li class="breadcrumb-item">
-                      <a href={window.BASE_URL+"#/database-mysql/"} title="Databases" >
-                        <i class="bi bi-hdd-stack"></i> Databases
-                      </a>
+                     <a href={window.BASE_URL+"#/database-mysql/"} title="Databases" >
+                      <i class="bi bi-hdd-stack"></i> Databases
+                     </a>
                   </li>
                    <li class="breadcrumb-item">
-                     <a href={window.BASE_URL+"#/database-mysql/"+this.props.params.dbname} title={this.props.params.dbname} >
+                     <a href={window.BASE_URL+"#/database-mysql/"+this.props.params.dbname}
+                          onClick={e=>this.getDatabaseTables(e, this.props.params.dbname)}
+                          title={this.props.params.dbname}>
+
                         {this.props.params.dbname}
                      </a>
                    </li>
                  </ol>
-
-                 &nbsp; <a href="#" class="quickLinksFileManager" onClick={this.newTableBtn}>
-                             <i class="bi bi-plus-square"></i> Add new Table
+                 &nbsp;&nbsp;
+                        <input type="file"  style={{display:"none"}} id="import_Db" onChange={this.importDb} />
+                        <label for="import_Db" class="labelBtn quickLinksFileManager"> <i class="bi bi-box-arrow-in-left"></i> Import </label>
+                 &nbsp; <a href="#" class="quickLinksFileManager" onClick={this.exportTables}>
+                          <i class="bi bi-box-arrow-right"></i> Export
                        </a>
-                &nbsp; <a href="#" class="quickLinksFileManager redColor" onClick={e=>this.removeData(e,"")}>
+                 &nbsp; <a href="#" class="quickLinksFileManager" onClick={this.newTableBtn}>
+                             <i class="bi bi-plus-square"></i> Add Table
+                       </a>
+                 &nbsp; <a href="#" class="quickLinksFileManager redColor" onClick={e=>this.removeData(e,"")}>
                           <i class="bi bi-trash3"></i> Remove
                        </a>
-                &nbsp; <a href="#" onClick={this.showSql} class="quickLinksFileManager">
+                 &nbsp; <a href="#" onClick={this.showSql} class="quickLinksFileManager">
                           <i class="bi bi-code-slash"></i> Run Sql
                        </a>
               </nav>

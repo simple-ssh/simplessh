@@ -134,7 +134,7 @@ class DatabaseUsers extends React.Component {
                </div>
               <div class="col-md-3">
                 <br/>
-                <button class="btn btn-primary btn_small" type ="submit" >Add New Database</button>
+                <button class="btn btn-primary btn_small" type ="submit" >Add and Assign User to DB</button>
               </div>
               <div class="col-md-12">
                 {this.privileges.map(row=>

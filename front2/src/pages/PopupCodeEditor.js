@@ -22,6 +22,7 @@ class PopupCodeEditor extends React.Component {
                      browserMobile: false,
                     }
  }
+
  updateRows=()=>{
         var objRows=[];
         try{
@@ -86,7 +87,7 @@ class PopupCodeEditor extends React.Component {
       document.getElementById("editorBottomLink").style.display = "none";
     }catch(err){}
     localStorage.setItem(this.sessionStorageMinimise,"");
-
+    this.updateRows();
  }
 
 

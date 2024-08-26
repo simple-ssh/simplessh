@@ -32,6 +32,9 @@ public class MvcConfig implements WebMvcConfigurer{
 
     @Value("${static.crossOrigin2}")
     private String CrossOrigin2;
+    @Value("${static.crossOrigin3}")
+    private String CrossOrigin3;
+
 
     public MvcConfig(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -40,7 +43,7 @@ public class MvcConfig implements WebMvcConfigurer{
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins(CrossOrigin, CrossOrigin1, CrossOrigin2)
+                .allowedOrigins(CrossOrigin, CrossOrigin1, CrossOrigin2, CrossOrigin3)
                 .allowedMethods("GET","POST","PUT", "DELETE");
                 //.allowedHeaders("header1","headers", "header2", "header3")
                 //.exposedHeaders("header1","headers", "header2")

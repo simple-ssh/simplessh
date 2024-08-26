@@ -7,14 +7,15 @@ import axios from 'axios';
 import serialize from 'form-serialize';
 
 class Database extends React.Component {
- sessionStorageNameDb = 'list-of-database';
- privileges = ["ALL PRIVILEGES","CREATE","DROP","DELETE","INSERT","SELECT","UPDATE"];
- constructor(props) {
-       super(props);
-       this.state = {rows : [],
-                     text: '',
-                     title: ''
-                    }
+sessionStorageNameDb = 'list-of-database';
+privileges = ["ALL PRIVILEGES","CREATE","DROP","DELETE","INSERT","SELECT","UPDATE"];
+
+constructor(props) {
+   super(props);
+   this.state = {rows : [],
+                 text: '',
+                 title: ''
+                }
  }
 
  componentDidMount(){
@@ -55,7 +56,7 @@ class Database extends React.Component {
      axios.put(window.API_URL+'import-database', formData, headers()).
            then(res => {
              hideLoad();
-             alert(res.data);
+             alert(res.data.response);
            }). catch(error => {
              handleError(error);
              hideLoad();
@@ -189,7 +190,6 @@ class Database extends React.Component {
                     <input type="file" name="import" style={{display:"none"}}
                         id={"import_"+row.name} onChange={e=>this.importDb(e, row.name)} />
                     <label for={"import_"+row.name} class="labelBtn"> <i class="bi bi-box-arrow-in-left"></i> Import </label>
-
                 </td>
                 <td>
                    <a href="#" onClick={e=>this.removeData(e, row.name )}>
@@ -208,7 +208,7 @@ class Database extends React.Component {
                 </p>
             </div>
         </div>
-       </div>
+      </div>
     );
   }
 }
