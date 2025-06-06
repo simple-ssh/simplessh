@@ -31,7 +31,8 @@ https://simplessh.com/info/getting-started/how-to-run-simplessh-on-windows-how-t
 Everyone is welcome to contribute by reporting bugs, suggesting features, or providing improvements.
 
 ## License & Ownership
-
-This project is owned by **@Corneli F.**
-All rights reserved. Redistribution, selling, or claiming this work as your own is strictly prohibited.
+This project is **free to use** for everyone.
+You are welcome to use it, modify it, and contribute.
+However, **redistribution, selling, or claiming this work as your own is not permitted**.
+All rights reserved by @Corneli F.
  
