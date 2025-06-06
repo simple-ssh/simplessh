@@ -9,8 +9,8 @@ import simplessh.com.dao.DownloadFile;
 import simplessh.com.request.DataBaseNewRequest;
 import simplessh.com.response.ImportResponse;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -94,19 +94,19 @@ public class DatabaseService{
         String name   = request.getParameter("name");
         String tables = request.getParameter("tables");
                tables  = tables!=null && !tables.isEmpty() ? " "+tables : "";
-        // check if path /var/easyvps path exist and open the connection
+        // check if path /tmp/simplessh_tmp path exist and open the connection
         String idConnection = request.getParameter("id");
         ssh.checkForVarEasyvpsPath(idConnection);
 
-        ssh.executeAll(idConnection, new Data("new_empty_file","root","/var/easyvps/"+name+".sql"),
-                                     new Data("file_permission","666","/var/easyvps/"+name+".sql"),
-                                     new Data("mysql_export",name+tables, "/var/easyvps/"+name+".sql") );
+        ssh.executeAll(idConnection, new Data("new_empty_file","root","/tmp/simplessh_tmp/"+name+".sql"),
+                                     new Data("file_permission","666","/tmp/simplessh_tmp/"+name+".sql"),
+                                     new Data("mysql_export",name+tables, "/tmp/simplessh_tmp/"+name+".sql") );
 
         String mimeType = "application/octet-stream";
         response.setContentType(mimeType);
         response.setHeader("Content-Disposition", String.format("inline; filename=\"" + name + ".sql\""));
 
-        DownloadFile inp= ssh.downloadFileStream("/var/easyvps/"+name+".sql", idConnection);
+        DownloadFile inp= ssh.downloadFileStream("/tmp/simplessh_tmp/"+name+".sql", idConnection);
         FileCopyUtils.copy(inp.getFile(), response.getOutputStream());
 
         ssh.disconnectSFTP(inp.getChannelDownload(),  inp.getChannelSftpDownload() );
@@ -131,12 +131,12 @@ public class DatabaseService{
             listF.put(file.getOriginalFilename(), file.getInputStream());
         }catch (Exception e){}
 
-        ssh.uploadFile(listF,  "/var/easyvps/", id );
+        ssh.uploadFile(listF,  "/tmp/simplessh_tmp/", id );
 
         try{Thread.sleep(2000);}catch (Exception e){}
 
-        ssh.executeAll(id, new Data("file_permission","666","/var/easyvps/"+file.getOriginalFilename()),
-                           new Data("mysql_import",dbname, "/var/easyvps/"+file.getOriginalFilename()) );
+        ssh.executeAll(id, new Data("file_permission","666","/tmp/simplessh_tmp/"+file.getOriginalFilename()),
+                           new Data("mysql_import",dbname, "/tmp/simplessh_tmp/"+file.getOriginalFilename()) );
 
         return new ImportResponse("Data imported", (getList != null ? databaseTablesServices.getDataList(id, dbname) : null) ) ;
     }

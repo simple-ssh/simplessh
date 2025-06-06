@@ -3,7 +3,7 @@ package simplessh.com.services;
 import org.springframework.stereotype.Service;
 import simplessh.com.dao.Data;
 import simplessh.com.response.ListMapResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -300,7 +300,7 @@ public class DomainsServices{
    public List<Map<String,String>> removeDomain(String id, HttpServletRequest request ) {
         String name = request.getParameter("name");
 
-         ssh.execute("move", id, "/etc/nginx/conf.d/"+name, "/var/trash/");
+         ssh.execute("move", id, "/etc/nginx/conf.d/"+name, "/tmp/simplessh_trash/");
         try {  Thread.sleep(2000);  } catch (InterruptedException e) { }
          ssh.execute("nginx_restart", id );
         try {  Thread.sleep(2000);  } catch (InterruptedException e) { }
@@ -322,7 +322,7 @@ public class DomainsServices{
     public List<Map<String,String>> getDataList(String id){
         String domainList =  ssh.execute( "show_folder_content_ls", id, "/etc/nginx/conf.d");
         return Arrays.stream(domainList.split("\\r?\\n")).
-                      filter(st->!st.contains("file:") && !st.contains(".key") && !st.isEmpty()).
+                      filter(st->!st.contains("file:") && !st.contains(".key") && !st.isEmpty() && !st.equals(".") && !st.equals("..") && !st.equals("%1")).
                       map(st->{
                           String dbName = st.replace("--", "").replace("|", "").
                                              replace(".conf", "").replace(" ","").

@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.dao.SshAccount;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +63,7 @@ public class SshAccountsServices {
                                e.setMysqlPass(data.getMysqlPass());
 
                              e.setFast(data.getFast());
+                             e.setNoSudo(data.getNoSudo());
                         });
 
         }

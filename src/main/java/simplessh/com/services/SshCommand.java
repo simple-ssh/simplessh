@@ -144,9 +144,11 @@ public class SshCommand {
         if(commandName.contains("mysql_"))
            command = command.replace("mysqluser", sshAccount.getMysqlLog());
 
-        log.info("Command: echo '****' | sudo -S "+command);
 
-        command = (!sshAccount.getSshPass().isEmpty() ? "echo '"+sshAccount.getSshPass()+"' | ":"")+"sudo -S "+command;
+        log.info(!sshAccount.getNoSudo().contains("yes") ? "Command: echo '****' | sudo -S "+command : command);
+
+        command = !sshAccount.getNoSudo().contains("yes") ? (!sshAccount.getSshPass().isEmpty() ? "echo '"+sshAccount.getSshPass()+"' | ":"")+"sudo -S "+command
+                                                          : command;
 
         StringBuilder returnComandData = new StringBuilder();
         Map<String, String> result = new HashMap<>();
@@ -164,7 +166,6 @@ public class SshCommand {
             InputStream in = channel.getInputStream();
             // channel.setPty(true);
             channel.connect(60000);
-
 
             InputStream inErr =  channel.getErrStream();
             cf = CompletableFuture.supplyAsync(() -> Helpers.inputStreamToString(inErr,"err")).orTimeout(1, TimeUnit.SECONDS);
@@ -316,14 +317,14 @@ public class SshCommand {
     public void sftpUpload(String idConnection, Map<String, InputStream> files, String path,
                            String owner, String permission){
 
-        String checkDir=  execute("check_if_directory_exist", idConnection, "/var/easyvps/" );
+        String checkDir=  execute("check_if_directory_exist", idConnection, "/tmp/simplessh_tmp/" );
 
         if(!checkDir.contains("yes"))
-            executeAll(idConnection, new Data("new_directory","/var/easyvps/"),
-                                     new Data("only_folder_permision","775", "/var/easyvps/") );
+            executeAll(idConnection, new Data("new_directory","www-data", "/tmp/simplessh_tmp/"),
+                                     new Data("only_folder_permision","775", "/tmp/simplessh_tmp/") );
 
 
-        uploadFile(files,  "/var/easyvps/", idConnection );
+        uploadFile(files,  "/tmp/simplessh_tmp/", idConnection );
 
         try{ Thread.sleep(1000);  }catch(InterruptedException ee){
             System.out.println(ee.getMessage());
@@ -331,8 +332,8 @@ public class SshCommand {
 
         // move accept multiple files separated by coma like {f_path1, f_path2,...} we put it here
 
-        String dest = files.size()>1?  "{/var/easyvps/"+String.join(",/var/easyvps/", files.keySet())+"} " :
-                "/var/easyvps/"+ files.keySet().toArray()[0];
+        String dest = files.size()>1?  "{/tmp/simplessh_tmp/"+String.join(",/tmp/simplessh_tmp/", files.keySet())+"} " :
+                "/tmp/simplessh_tmp/"+ files.keySet().toArray()[0];
 
         String newPath   = path.endsWith("/") ? path : path+"/";
         String destFinal = files.size()>1? newPath+String.join("  "+newPath, files.keySet()) :
@@ -422,14 +423,14 @@ public class SshCommand {
     }
 
     /**
-     * will check if path /var/easyvps exist if not than create it
+     * will check if path /tmp/simplessh_tmp exist if not than create it
      */
     public void checkForVarEasyvpsPath(String idConnection){
-        String checkDir =  execute("check_if_directory_exist", idConnection,"/var/easyvps/" );
+        String checkDir =  execute("check_if_directory_exist", idConnection,"/tmp/simplessh_tmp/" );
 
         if(!checkDir.contains("yes")) {
-          executeAll(idConnection, new Data("new_directory","www-data", "/var/easyvps/"),
-                                   new Data("only_folder_permision","775", "/var/easyvps/") );
+          executeAll(idConnection, new Data("new_directory","www-data", "/tmp/simplessh_tmp/"),
+                                   new Data("only_folder_permision","775", "/tmp/simplessh_tmp/") );
         }
     }
 

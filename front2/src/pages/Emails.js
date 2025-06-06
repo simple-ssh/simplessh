@@ -165,9 +165,9 @@ class Emails extends React.Component {
 
         "<h4>This is the config for smtp for Roundcube Web mail <br/>(add this lines to the end of file: /config/config.inc.php)</h4>"+
         "<code>"+
-         "$config['smtp_server'] = 'tls://"+server+"';<br/>"+
-         "$config['default_host'] = 'ssl://"+server+"';<br/>"+
-         "$config['default_port'] = 993;<br/>"+
+         "$config['smtp_host'] = 'tls://"+server+"';<br/>"+
+         "$config['imap_host'] = 'ssl://"+server+"';<br/>"+
+         "$config['imap_port'] = 993;<br/>"+
          // TCP port used for IMAP connections
                   "$config['smtp_port'] = 587;<br/>"+
                   "$config['smtp_user'] = '%u';<br/>"+

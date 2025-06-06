@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import simplessh.com.Helpers;
 import simplessh.com.dao.PerformDataImpl;
 import simplessh.com.dao.SshAccount;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -291,10 +291,22 @@ public class EmailsServices extends PerformDataImpl {
                   FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8""";
 
-        // create database an user
-        ssh.executeMap("mysql_command", id, "USE "+dbName+"; "+virtual_domains +";\n"+virtual_users +";\n"+virtual_aliases);
+        String virtual_admins= """
+                CREATE TABLE \\`virtual_admins\\` (
+                  \\`id\\` int(11) NOT NULL auto_increment,
+                  \\`email\\` varchar(200) NOT NULL,
+                  \\`password\\` varchar(200) NOT NULL,
+                  \\`status\\` varchar(50) DEFAULT NULL,
+                  \\`login_token\\` varchar(100) DEFAULT NULL,
+                  \\`reset_token\\` varchar(100) DEFAULT NULL,
+                  \\`date_log\\` datetime DEFAULT NULL,
+                  PRIMARY KEY (\\`id\\`) 
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8""";
 
-        // check if folder /var/easyvps exist if not create it
+        // create database an user
+        ssh.executeMap("mysql_command", id, "USE "+dbName+"; "+virtual_domains +";\n"+virtual_users +";\n"+virtual_aliases+";\n"+virtual_admins);
+
+        // check if folder /tmp/simplessh_tmp exist if not create it
         ssh.checkForVarEasyvpsPath(id);
 
         // prepare postfix.sh
@@ -320,23 +332,23 @@ public class EmailsServices extends PerformDataImpl {
         Map<String, InputStream> file = Map.of("postfix.sh", new ByteArrayInputStream(postFix.getBytes()),
                                                "dovecot.sh", new ByteArrayInputStream(dovecot.getBytes()));
 
-        // upload files to /var/easyvps/
-        ssh.sftpFastUpload(id, file, "/var/easyvps/", "",  "");
+        // upload files to /tmp/simplessh_tmp/
+        ssh.sftpFastUpload(id, file, "/tmp/simplessh_tmp/", "",  "");
 
         // add execute permission to postfix.sh and dovecot.sh
-        ssh.execute("commandline", id, "chmod +x /var/easyvps/postfix.sh; chmod +x /var/easyvps/dovecot.sh" );
+        ssh.execute("commandline", id, "chmod +x /tmp/simplessh_tmp/postfix.sh; chmod +x /tmp/simplessh_tmp/dovecot.sh" );
 
-        // execute file /var/easyvps/postfix.sh
-        ssh.execute("commandline", id, "/var/easyvps/postfix.sh" );
+        // execute file /tmp/simplessh_tmp/postfix.sh
+        ssh.execute("commandline", id, "/tmp/simplessh_tmp/postfix.sh" );
 
         try { Thread.sleep(2000); } catch (Exception ignored) { }
 
-        // execute file /var/easyvps/postfix.sh
-        ssh.execute("commandline", id, "/var/easyvps/dovecot.sh" );
+        // execute file /tmp/simplessh_tmp/postfix.sh
+        ssh.execute("commandline", id, "/tmp/simplessh_tmp/dovecot.sh" );
 
         try { Thread.sleep(2000); } catch (Exception ignored) { }
         // remove files
-        ssh.execute("commandline", id, "rm /var/easyvps/postfix.sh; rm /var/easyvps/dovecot.sh" );
+        ssh.execute("commandline", id, "rm /tmp/simplessh_tmp/postfix.sh; rm /tmp/simplessh_tmp/dovecot.sh" );
 
         return "It's look like all done, give a try and see, don't forget to add the DNS spf,dmark,dkim TXT record to your domain(s)";
     }

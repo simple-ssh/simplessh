@@ -5,35 +5,32 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import simplessh.com.services.CustomUserDetailsService;
 
-import java.util.Collections;
-
-/**
- * security config file
- */
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(prePostEnabled = true)
+public class WebSecurityConfig {
+
     @Value("${static.crossOrigin}")
-    private String CrossOrigin;
+    private String crossOrigin;
 
     @Autowired
-    private  AuthEntryPointJwt unauthorizedHandler;
+    private AuthEntryPointJwt unauthorizedHandler;
 
     @Autowired
-    private  JWTAuthorizationFilter jwtAuthorizationFilter;
+    private JWTAuthorizationFilter jwtAuthorizationFilter;
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -45,62 +42,66 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService();
-    };
+        return userDetailsService;
+    }
 
     @Bean
     public AuthenticationFailureHandler authenticationFailureHandler() {
-          return new CustomAuthenticationFailureHandler();
+        return new CustomAuthenticationFailureHandler();
     }
 
-
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService());
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
-    @Bean(name="myAuthenticationManager")
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-           http .cors().and().csrf().disable()
-                .exceptionHandling()
-                .authenticationEntryPoint(unauthorizedHandler).and()
-                 //.addFilter( new JWTAuthorizationFilter(authenticationManager()))
-                .addFilterAfter(jwtAuthorizationFilter,  BasicAuthenticationFilter.class) //  new JWTAuthorizationFilter(authenticationManager())
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests()
-                .antMatchers("/api/v1/**",
-                        "/content/config/**",
-                        "/content/files/**",
-                        "/*.xml",
-                        "/*.json")
-                .hasAnyRole("ADMIN")
-                .antMatchers("/",
-                        "/**",
-                        "/api/v1/homepage",
-                        "/api/v1/header",
-                        "/api/v1/signin",
-                        "/api/v1/login",
-                        "/api/v1/signup",
-                        "/api/v1/reset-password",
-                        "/content/**",
-                        "/registration",
-                        "/error",
-                        "/favicon.ico",
-                        "/*.png",
-                        "/*.gif",
-                        "/*.svg",
-                        "/*.jpg",
-                        "/*.jpg",
-                        "/*.css",
-                        "/*.js")
-                .permitAll() ;
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/**",
+                                "/content/config/**",
+                                "/content/files/**",
+                                "/*.xml",
+                                "/*.json")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(
+                                "/",
+                                "/**",
+                                "/api/v1/homepage",
+                                "/api/v1/header",
+                                "/api/v1/signin",
+                                "/api/v1/login",
+                                "/api/v1/signup",
+                                "/api/v1/reset-password",
+                                "/content/**",
+                                "/registration",
+                                "/error",
+                                "/favicon.ico",
+                                "/*.png",
+                                "/*.gif",
+                                "/*.svg",
+                                "/*.jpg",
+                                "/*.css",
+                                "/*.js")
+                        .permitAll()
+                );
 
+        http.addFilterAfter(jwtAuthorizationFilter, BasicAuthenticationFilter.class);
+
+        return http.build();
     }
-
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import simplessh.com.config.JwtUtils;
 import simplessh.com.request.LoginRequest;
 import simplessh.com.response.JwtResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;

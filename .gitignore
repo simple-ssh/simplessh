@@ -7,6 +7,9 @@
 /logs/
 /target/
 /data-setore.jceks
+data-setore.jceks
+changesToEMAIL INFO.txt
+replacetxt.txt
 /src/logs/
 *.log
 *.jceks

@@ -319,8 +319,8 @@ breadCrumb=()=>{
                    <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/var/www/" data-path="/var/www/" >
                          /var/www
                     </a>
-                  <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/var/trash/" data-path="/var/trash/" >
-                     <i class="bi bi-trash-fill" data-path="/var/trash/"></i> Trash
+                  <a href="#" class="quickLinksFileManager" onClick={this.getData} title="/tmp/simplessh_trash/" data-path="/tmp/simplessh_trash/" >
+                     <i class="bi bi-trash-fill" data-path="/tmp/simplessh_trash/"></i> Trash
                   </a>
                   <a href="#" class="quickLinksFileManager" style={{color:"red"}} onClick={this.emptyTrash}  >
                      <i class="bi bi-trash"></i> Empty Trash
@@ -914,8 +914,11 @@ breadCrumb=()=>{
              </p>
              <p> <label> <input type="checkbox" value="yes" name="yesSubPermission" onClick={e=>showThisPart(e,"showThisPart")}/> Set permission for all file/folder inside </label></p>
               <p id="showThisPart">
-                 Enter the permission like 755 or 644 or 600 <br/>
-                 <input type="text" placeholder="" id="filesInput" name="subPermission" class="form-control"/>
+                 Folders permission (755 or 644 or 600, ...) <br/>
+                 <input type="text" placeholder="755 or 644 or 600,..." id="filesInput" name="subPermissionFolders" class="form-control"/>
+                 <div class="clear"></div>
+                 Files permission (644 or 600, ...) <br/>
+                 <input type="text" placeholder="644 or 600,..." id="filesInput" name="subPermissionFiles" class="form-control"/>
               </p>
               <div class="height5px"></div>
               <div class="text_align_right">

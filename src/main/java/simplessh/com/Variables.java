@@ -18,10 +18,10 @@ public class Variables {
 
          Map<String, String> dataUbuntu=new LinkedHashMap<>(){{
              //cp -r from to
-             put("copy", "cp -r %0 %1");
+             put("copy", "cp -r \"%0\" \"%1\"");
 
              // mv from to
-             put("move", "mv %0 %1");
+             put("move", "mv \"%0\" \"%1\"");
 
              //rm -r -f /directory/dir
              put("remove_directory", "rm -r -f %0");
@@ -39,13 +39,13 @@ public class Variables {
              put("tarunzip", "tar xzf %0 --directory %1; chown -R \"$USER\":www-data %1");
 
              //ls /etc/nginx
-             put("show_folder_content_ls", "ls %0");
+             put("show_folder_content_ls", "ls -a %0");
 
              //ls -g --block-size=KB /etc/nginx
-             put("show_folder_content_ls_full", "ls -g --block-size=KB %0");
+             put("show_folder_content_ls_full", "ls -a -g --block-size=KB %0");
 
              //ls -lh --block-size=KB --time-style="+%d/%m/%Y-%H:%M:%S" /etc/nginx  -> drwxr-xr-x 53 root root 5kB 06/04/2024-18:23:42 lib
-             put("show_folder_content_ls_short_and_full", "ls -lh --block-size=KB --time-style=\"+%d/%m/%Y-%H:%M:%S\" %0");
+             put("show_folder_content_ls_short_and_full", "ls -a -lh --block-size=KB --time-style=\"+%d/%m/%Y-%H:%M:%S\" %0");
 
              //less /etc/nginx
              put("get_file_content", "less %0");
@@ -59,7 +59,7 @@ public class Variables {
              //put("put_content_in_file_simple", "awk -vORS=, '{ print \"%0\" }' %1 | sed 's/,$/\\n/'");
 
              //bash -c 'echo > path/where/to/newfile.txt'; chown -R \"$USER\":www-data path/where/to/newfile.txt"
-             put("new_empty_file", "bash -c 'echo > %1'; chown -R \"$USER\":%0 %1");
+             put("new_empty_file", "bash -c 'echo > \"%1\"'; chown -R \"$USER\":%0 %1");
 
              //mkdir -p path/where/to/new-folder; chown -R \"$USER\":www-data path/where/to/new-folder"
              put("new_directory", "mkdir -p %1; chown -R \"$USER\":%0 %1");
@@ -112,7 +112,7 @@ public class Variables {
              put("show_folder_content_gio", "gio tree %0");
 
              //
-             put("empty_trash", "rm -r -f /var/trash/*");
+             put("empty_trash", "rm -r -f /tmp/simplessh_trash/*");
 
              //
              put("installssl", "certbot --nginx --debug --non-interactive --email %0 --agree-tos --domains %1,www.%2 --redirect --keep-until-expiring");

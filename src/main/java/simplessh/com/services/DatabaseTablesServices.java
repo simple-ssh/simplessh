@@ -6,7 +6,7 @@ import simplessh.com.dao.PerformDataImpl;
 import simplessh.com.request.AddUpdateRow;
 import simplessh.com.response.GetTableFullData;
 import simplessh.com.response.ListMapResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -283,13 +283,13 @@ public class DatabaseTablesServices extends PerformDataImpl{
             }
 
             if (val.compareTo("NULL") != 0)
-                updateData.add("p." + key + " = " + value);
+                updateData.add(key + " = " + value);
 
         });
 
         String sql = typeBtn.contains("add") ?
                 "SET NAMES 'utf8'; INSERT INTO " + databaseName + "." + tableName + " ( " + columns + ") VALUES (" + values + ")":
-                "SET NAMES 'utf8'; UPDATE " + databaseName + "." + tableName + " p SET " + updateData + " WHERE " + data.getWhere();
+                "SET NAMES 'utf8'; UPDATE " + databaseName + "." + tableName + " SET " + updateData + " WHERE " + data.getWhere();
 
 
         String response = ssh.execute("mysql_command", id, sql);
@@ -316,7 +316,7 @@ public class DatabaseTablesServices extends PerformDataImpl{
         Integer pageNr        = Integer.parseInt(page);
         Integer pination      = pageNr==1? 0 : ((pageNr - 1) * perPage);
 
-        String sql            =  "DELETE FROM " + databaseName + "." + tableName + " p WHERE " + where;
+        String sql            =  "DELETE FROM " + databaseName + "." + tableName + " WHERE " + where;
 
         String response       = ssh.execute("mysql_command", id, sql);
 

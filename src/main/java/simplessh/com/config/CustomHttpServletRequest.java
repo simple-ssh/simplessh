@@ -1,7 +1,7 @@
 package simplessh.com.config;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.util.*;
 
 public class CustomHttpServletRequest extends HttpServletRequestWrapper {

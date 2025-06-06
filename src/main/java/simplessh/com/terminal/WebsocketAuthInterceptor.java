@@ -2,6 +2,7 @@ package simplessh.com.terminal;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -20,8 +21,11 @@ public class WebsocketAuthInterceptor  implements ChannelInterceptor {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    @Autowired
-    private TerminalWebsocketService terminalWebsocketService;
+    private final TerminalWebsocketService terminalWebsocketService;
+
+    public WebsocketAuthInterceptor(@Lazy TerminalWebsocketService terminalWebsocketService) {
+        this.terminalWebsocketService = terminalWebsocketService;
+    }
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {

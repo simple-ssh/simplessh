@@ -127,7 +127,7 @@ class DatabaseTablesData extends React.Component {
      try{
        for(var j=0;j<this.state.columns.length;j++){
         if(this.state.columns[j].Key !="")
-          where.push("p."+this.state.columns[j].Field +" = '"+data[this.state.columns[j].Field]+"'");
+          where.push(this.state.columns[j].Field +" = '"+data[this.state.columns[j].Field]+"'");
        }
      }catch(err){}
 
@@ -153,11 +153,11 @@ class DatabaseTablesData extends React.Component {
 
               for(var j=0;j<this.state.columns.length;j++){
                 if(this.state.columns[j].Key !=""){
-                  var is = whereObj["p."+this.state.columns[j].Field];
+                  var is = whereObj[this.state.columns[j].Field];
                    if(typeof is === 'undefined'){
-                        whereObj["p."+this.state.columns[j].Field] = "'"+data[this.state.columns[j].Field]+"'";
+                        whereObj[this.state.columns[j].Field] = "'"+data[this.state.columns[j].Field]+"'";
                      }else{
-                        whereObj["p."+this.state.columns[j].Field] = is +",'"+data[this.state.columns[j].Field]+"'";
+                        whereObj[this.state.columns[j].Field] = is +",'"+data[this.state.columns[j].Field]+"'";
                      }
                 }
               }
@@ -211,7 +211,7 @@ class DatabaseTablesData extends React.Component {
                          whereV = whereV.replaceAll("'","\\\'");
                          whereV = whereV.replaceAll('"', '\\"');
                          whereV = whereV.replaceAll("$","\\\$");
-            where.push("p."+this.state.columns[j].Field +" = '"+whereV+"'");
+            where.push(this.state.columns[j].Field +" = '"+whereV+"'");
           }
        }
    }catch(err){}
@@ -375,7 +375,7 @@ duplicate =(e, i)=>{
                  <td> <input class="checkboxBulk" type="checkbox" value={x}/></td>
                  <td>
                    <a href="#" onClick={e=>this.editBtn(e, x )} title="Edit">
-                       <i class="bi bi-pencil-square"></i>
+                      <i class="bi bi-pencil-square"></i>
                    </a>&nbsp;
 
                    <a href="#" onClick={e=>this.duplicate(e, x )} title="Duplicate">

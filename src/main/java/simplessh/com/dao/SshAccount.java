@@ -18,6 +18,7 @@ public class SshAccount {
     private String mysqlPass;
     private String id;
     private String fast;
+    private String noSudo;
 
     public String getByName(String name){
         switch (name)
@@ -41,6 +42,8 @@ public class SshAccount {
                 return mysqlPass;
             case "fast":
                 return fast;
+            case "noSudo":
+                return noSudo;
              default:
                 return "";
 
@@ -134,5 +137,11 @@ public class SshAccount {
         this.fast = fast;
     }
 
+    public void setNoSudo(String noSudo) {
+        this.noSudo = noSudo;
+    }
 
+    public String getNoSudo() {
+        return noSudo==null? "no": noSudo;
+    }
 }

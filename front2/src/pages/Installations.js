@@ -13,7 +13,7 @@ class Installations extends React.Component {
          {name: "Dnsutils",checkStatus:"", origin:"dnsutils", required: false, version: "Last", description:"Collection of utilities for querying Domain Name System (DNS), like dig, nslookup, host, nsupdate, dnssec-keygen "},
          {name: "Certbot",checkStatus:"", origin:"certbot python3-certbot-nginx", required: false, version: "Last", description:"Allow you to install SSL"},
          {name: "JDK",checkStatus:"", origin:"openjdk-8-jdk", required: false, version: "", description:"Java JDK"},
-         {name: "PHP",checkStatus:"", origin:"php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl",
+         {name: "PHP",checkStatus:"", origin:"php8.3-fpm php8.3-common php8.3-mysql php8.3-xml php8.3-xmlrpc php8.3-curl php8.3-gd php8.3-imagick php8.3-cli php8.3-dev php8.3-imap php8.3-mbstring php8.3-opcache php8.3-soap php8.3-zip php8.3-intl php8.3-ssh2",
           required: false, version: "8.3", description:"Programming language, please run this before install php: sudo apt-add-repository ppa:ondrej/php"},
          {name: "VSFTPD",checkStatus:"", origin:"vsftpd", required: false, version: "Last", description:"FTP server"},
          {name: "Postfix,  Dovecot, DKIM, SPF DMARC",checkStatus:"", origin:"postfix postfix-mysql dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-mysql opendkim opendkim-tools postfix-policyd-spf-python opendmarc postsrsd dnsutils", required: false, version: "Last", description:"Mail server. All in one"},

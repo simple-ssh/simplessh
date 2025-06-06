@@ -153,22 +153,29 @@ checkBoxFast=(e)=>{
                                                  placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;****&#10;**** &#10;....&#10;-----END RSA PRIVATE KEY-----" />
                       </p>
                      <p>
-                      <small>Mysql user name</small>
+                      <small>Mysql user name(by default user name for mysql/maria is : root, just enter root)</small>
                       <input type="text" name="mysqlLog" class="form-control" placeholder="root"/>
                     </p>
                     <p>
-                      <small>Mysql password</small>
+                      <small>Mysql password(if you did not set any password for user root, than leave empty)</small>
                       <input type="password" name="mysqlPass" class="form-control" placeholder="****"/>
                     </p>
                      <div class="height5px"></div>
                     <p>
-                     <label> <b>
-                      <input type="checkbox" name="fast" id="makeFastGo" value="yes"/>&nbsp;
-                       Make fast save file and upload</b>
+                     <label>
+                      <input type="checkbox" name="fast" id="makeFastGo" value="yes"/>&nbsp; Make fast save file and upload
                      </label>
-                       <small>(it will work only if SSH user have root access)</small>
-
+                      &nbsp;  <i>(it will work only if SSH user have root access)</i>
                     </p>
+
+                    <div class="height5px"></div>
+
+                    <p>
+                     <label>
+                       <input type="checkbox" name="noSudo" id="noSudo" value="yes"/>&nbsp; Do not add "sudo" in front of command
+                     </label>
+                     &nbsp;  <i>(Some hosting provide ssh access but not recognise <b>sudo</b> command Instant of: <b>sudo ls /</b>  will be  <b>ls /</b>)</i>
+                     </p>
                     <div class="height10px"></div>
                    <p>
                      <button class="btn btn-primary btn_small" type ="submit" >{this.state.activeAcc !="" ? "Update":"Add"} Account</button>

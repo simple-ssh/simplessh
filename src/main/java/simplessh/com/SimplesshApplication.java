@@ -8,24 +8,24 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import simplessh.com.services.KeyStoreService;
 
-
 @SpringBootApplication
 public class SimplesshApplication implements ApplicationListener<ContextRefreshedEvent> {
     private static  FirstStart load = new  FirstStart();
+
 
 	@Autowired
 	private KeyStoreService keyStoreService;
 
     public static void main(String[] args) {
-       load.showLoad();
-	   ConfigurableApplicationContext context = SpringApplication.run(SimplesshApplication.class, args);
-       load.setSpringContext(context);
+        load.showLoad();
+        ConfigurableApplicationContext context = SpringApplication.run(SimplesshApplication.class, args);
+        load.setSpringContext(context);
    }
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		 load.hideLoad();
-		 keyStoreService.setUp();
+	     keyStoreService.setUp();
     }
 
 	/*

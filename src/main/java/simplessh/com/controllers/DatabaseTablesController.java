@@ -7,7 +7,7 @@ import simplessh.com.response.GetTableFullData;
 import simplessh.com.response.ListMapResponse;
 import simplessh.com.response.ListStringResponse;
 import simplessh.com.services.DatabaseTablesServices;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 /**
  * @author Corneli F.

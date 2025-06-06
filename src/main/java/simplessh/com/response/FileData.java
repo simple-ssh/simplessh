@@ -14,6 +14,7 @@ public class FileData {
     private String[] str;
 
     public FileData(String data){
+
         this.str = data.split("\\s+");
 
         String typeFile  = getParts(0).substring(0, 1);
@@ -35,7 +36,18 @@ public class FileData {
         System.out.println("Time: " + str[6]);*/
 
     private String getParts(int n){
-      return str.length >=n ? str[n] :"";
+        //we have this type -rw-r--r-- 1 root     www-data    1kB 06/11/2024-19:12:47 fbfbcv gfjfgjf  fgjfjgj .txt
+       if(n==6 && str.length >=n){
+           StringBuilder fileName = new StringBuilder();
+           for (int i = 6; i < str.length; i++) {
+             fileName.append(str[i]).append(" ");
+           }
+           // Remove the trailing space
+           fileName.setLength(fileName.length() - 1);
+           return fileName.toString();
+       }else{
+          return str.length >=n ? str[n] :"";
+       }
     }
 
     private String toSize(){

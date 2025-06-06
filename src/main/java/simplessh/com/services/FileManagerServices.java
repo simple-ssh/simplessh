@@ -8,8 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import simplessh.com.dao.DownloadFile;
 import simplessh.com.response.FileData;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,8 @@ public class FileManagerServices{
      */
     public List<FileData> getFileFileList(String id, HttpServletRequest request) {
         String path = request.getParameter("directory");
-        return getList(id,path);
+        List<FileData> list = getList(id,path);
+        return list;
     }
 
     /**
@@ -53,8 +54,8 @@ public class FileManagerServices{
      */
     public List<FileData> getList(String id, String path){
         String data = ssh.execute("show_folder_content_ls_short_and_full", id, path);
-
         return Arrays.stream(data.split("\\r?\\n")).skip(1).map(e-> new FileData(e))
+                     .filter(e->!e.getName().equals(".")&&!e.getName().equals("..")&&!e.getName().equals("%1"))
                      .sorted(Comparator.comparing(e->e.getType())).toList();
     }
 
@@ -155,16 +156,16 @@ public class FileManagerServices{
      */
     public List<FileData> removeFileFolder(String id, Map<String, String> data) {
 
-        String checkDir= ssh.execute("check_if_directory_exist", id, "/var/trash/");
+        String checkDir= ssh.execute("check_if_directory_exist", id, "/tmp/simplessh_trash/");
 
         if(!checkDir.contains("yes"))
-            ssh.execute("new_directory", id, "www-data", "/var/trash/");
+            ssh.execute("new_directory", id, "www-data", "/tmp/simplessh_trash/");
 
         String fileList = data.getOrDefault("fileList","");
 
         ssh.execute("move", id,  fileList.replaceAll("\\(","\\\\(").
                                                            replaceAll("\\)","\\\\)"),
-                             "/var/trash/");
+                             "/tmp/simplessh_trash/");
         return  getList(id,data.getOrDefault("currentPath",""));
     }
 
@@ -207,11 +208,12 @@ public class FileManagerServices{
      * @return
      */
     public List<FileData> changeOwnerPermission(String id, Map<String, String> data) {
-        String type             = data.getOrDefault("type","");
-        String yesSubPermission = data.getOrDefault("yesSubPermission","");
-        String subPermission    = data.getOrDefault("subPermission","");
-        String paths            = data.getOrDefault("filePath","");
-        String owner            = data.getOrDefault("owner","");
+        String type                = data.getOrDefault("type","");
+        String yesSubPermission    = data.getOrDefault("yesSubPermission","");
+        String subPermissionFolder = data.getOrDefault("subPermissionFolders","");
+        String subPermissionFiles  = data.getOrDefault("subPermissionFiles","");
+        String paths               = data.getOrDefault("filePath","");
+        String owner               = data.getOrDefault("owner","");
 
 
         if(type.contains("owner")){
@@ -219,11 +221,12 @@ public class FileManagerServices{
         }else if(type.contains("folder")){
             ssh.execute("file_permission", id, data.getOrDefault("permissions",""), paths);
 
-            if(!yesSubPermission.isEmpty() && !subPermission.isEmpty()){
-                ssh.execute("all_folders_permission", id, paths, subPermission);
+              if(!yesSubPermission.isEmpty() && !subPermissionFolder.isEmpty())
+                ssh.execute("all_folders_permission", id, paths, subPermissionFolder);
 
-                ssh.execute("all_files_permission", id, paths, subPermission);
-            }
+              if(!yesSubPermission.isEmpty() && !subPermissionFiles.isEmpty())
+                ssh.execute("all_files_permission", id, paths, subPermissionFiles);
+
 
         }else if(type.contains("file")){
 

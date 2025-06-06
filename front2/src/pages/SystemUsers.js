@@ -147,7 +147,7 @@ class SystemUsers extends React.Component {
                    </a>
 
                 </td>
-                 <td>
+                 <td style={{width:"50px"}}>
                  {Object.keys(this.state.rows).length> 1?
                    <a href="#" onClick={e=>this.removeUser(e, row)}> <i class="bi bi-x-circle-fill"></i> </a>
                  :<></>}
