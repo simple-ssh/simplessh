@@ -1,5 +1,5 @@
-$config['smtp_host'] = 'tls://arendalhudpleie.no';
-$config['imap_host'] = 'ssl://arendalhudpleie.no';
+$config['smtp_host'] = 'tls://simplessh.com';
+$config['imap_host'] = 'ssl://simplessh.com';
 $config['imap_port'] = 993;
 $config['smtp_port'] = 587;
 $config['smtp_user'] = '%u';
