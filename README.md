@@ -1,7 +1,7 @@
 # SimpleSSH
 
 **SSH File Manager** — an easy way to manage your VPS/VDS via SSH with a user-friendly interface on Windows, Mac, and Linux.
-![Alt text](https://simplessh.com/public/screen/home_banner.jpg)
+![Alt text](https://raw.githubusercontent.com/simple-ssh/simplessh/refs/heads/master/simplessh.jpg)
 
 ## About
 
