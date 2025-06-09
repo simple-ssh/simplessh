@@ -69,7 +69,7 @@ Perfect — here's a polished version of the **Project Structure & Build Instruc
    cd front2
    npm install
    npm run build
-````
+```
 This will generate a production-ready `build/` folder inside `front2/`.
 
 
